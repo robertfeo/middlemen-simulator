@@ -22,6 +22,7 @@ class Program
             middlemen.Add(new Middleman { Name = name, Company = company });
         }
 
+        //SimulateDay(...)
         while (true)
         {
             foreach (var middleman in middlemen)
