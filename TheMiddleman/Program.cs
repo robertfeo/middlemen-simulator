@@ -26,7 +26,27 @@ class Program
     {
         string name = GetName(index);
         string company = GetCompany(name);
-        return new Middleman { Name = name, Company = company };
+        int initialBalance = GetInitialBalance();
+
+        return new Middleman { Name = name, Company = company, AccountBalance = initialBalance };
+    }
+
+    static int GetInitialBalance()
+    {
+        Console.WriteLine("Choose a difficulty level (Einfach, Normal, Schwer):");
+        string difficulty = Console.ReadLine() ?? "Normal";
+
+        switch (difficulty)
+        {
+            case "Einfach":
+                return 15000;
+            case "Normal":
+                return 10000;
+            case "Schwer":
+                return 7000;
+            default:
+                return 10000;  // Default to Normal
+        }
     }
 
     static List<Middleman> InitializeMiddlemen()
