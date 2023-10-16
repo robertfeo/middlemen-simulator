@@ -1,49 +1,71 @@
-﻿using TheMiddleman.Entity;
+﻿using System;
+using System.Collections.Generic;
+using TheMiddleman.Entity;
 
 class Program
 {
-    static void Main()
+    static int GetNumMiddlemen()
+    {
+        Console.WriteLine("Wieviel Zwischenhändler nehmen teil?");
+        return int.Parse(Console.ReadLine() ?? "0");
+    }
+
+    static Middleman CreateMiddleman(int index)
+    {
+        Console.WriteLine($"Name von Zwischenhändler {index}:");
+        string name = Console.ReadLine() ?? "";
+        Console.WriteLine($"Name der Firma von {name}:");
+        string company = Console.ReadLine() ?? "";
+        return new Middleman { Name = name, Company = company };
+    }
+
+    static List<Middleman> InitializeMiddlemen()
     {
         List<Middleman> middlemen = new List<Middleman>();
-        int currentDay = 1;
-
-        Console.WriteLine("Wieviel Zwischenhändler nehmen teil?");
-
-        int numMiddlemen = int.Parse(Console.ReadLine() ?? "0");
+        int numMiddlemen = GetNumMiddlemen();
 
         for (int i = 1; i <= numMiddlemen; i++)
         {
-            Console.WriteLine($"Name von Zwischenhändler {i}:");
-            string name = Console.ReadLine() ?? "";
-
-            Console.WriteLine($"Name der Firma von {name}:");
-            string company = Console.ReadLine() ?? "";
-
-            middlemen.Add(new Middleman { Name = name, Company = company });
+            middlemen.Add(CreateMiddleman(i));
         }
 
-        //SimulateDay(...)
+        return middlemen;
+    }
+
+    static void DisplayMiddlemanInfo(Middleman middleman, int currentDay)
+    {
+        Console.WriteLine($"{middleman.Name} von {middleman.Company} | Tag {currentDay}");
+        Console.WriteLine("b) Runde beenden");
+    }
+
+    static void ShowMenuAndTakeAction(Middleman middleman, ref int currentDay)
+    {
+        DisplayMiddlemanInfo(middleman, currentDay);
+        string option = Console.ReadLine() ?? "";
+
+        if (option == "b")
+        {
+            // Do nothing, just continue to next middleman
+        }
+    }
+
+    static void SimulateDay(List<Middleman> middlemen, ref int currentDay)
+    {
+        foreach (var middleman in middlemen)
+        {
+            ShowMenuAndTakeAction(middleman, ref currentDay);
+        }
+        currentDay++;
+    }
+
+    static void Main()
+    {
+        List<Middleman> middlemen = InitializeMiddlemen();
+        int currentDay = 1;
+
         while (true)
         {
-            foreach (var middleman in middlemen)
-            {
-                Console.WriteLine($"{middleman.Name} von {middleman.Company} | Tag {currentDay}");
-                Console.WriteLine("b) Runde beenden");
-                Console.WriteLine("q) Programm beenden");
-
-                string option = Console.ReadLine() ?? "q";
-
-                if (option == "b")
-                {
-                    continue;
-                }
-                else if (option == "q" || option == "")
-                {
-                    return;
-                }
-            }
-
-            currentDay++;
+            SimulateDay(middlemen, ref currentDay);
         }
     }
 }
