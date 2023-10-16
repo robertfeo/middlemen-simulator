@@ -1,3 +1,5 @@
+using System.Collections.Generic;  // Add this line
+
 namespace TheMiddleman.Entity
 {
     public class Middleman
@@ -5,6 +7,6 @@ namespace TheMiddleman.Entity
         public string? Name { get; set; }
         public string? Company { get; set; }
         public int AccountBalance { get; set; }
+        public List<Product>? Products { get; set; }  // New field
     }
 }
-
