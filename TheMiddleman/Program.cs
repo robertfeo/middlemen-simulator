@@ -10,12 +10,22 @@ class Program
         return int.Parse(Console.ReadLine() ?? "0");
     }
 
-    static Middleman CreateMiddleman(int index)
+    static string GetName(int index)
     {
         Console.WriteLine($"Name von Zwischenhändler {index}:");
-        string name = Console.ReadLine() ?? "";
+        return Console.ReadLine() ?? "";
+    }
+
+    static string GetCompany(string name)
+    {
         Console.WriteLine($"Name der Firma von {name}:");
-        string company = Console.ReadLine() ?? "";
+        return Console.ReadLine() ?? "";
+    }
+
+    static Middleman CreateMiddleman(int index)
+    {
+        string name = GetName(index);
+        string company = GetCompany(name);
         return new Middleman { Name = name, Company = company };
     }
 
