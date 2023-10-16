@@ -119,12 +119,11 @@ class Program
         Console.WriteLine("b) Runde beenden");
         string option = Console.ReadLine() ?? "";
 
-        if (option != "b")
+        if (option == "b")
         {
-            Console.WriteLine("Ungültige Eingabe!");
-            ShowMenuAndTakeAction(middleman, ref currentDay);
+            //
         }
-        else if (option == "e")  // New block
+        else if (option == "e")
         {
             Console.WriteLine("Verfügbare Produkte:");
             foreach (var product in middleman.Products)
