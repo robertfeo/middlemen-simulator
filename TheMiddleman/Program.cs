@@ -59,12 +59,25 @@ class Program
         }
     }
 
+    static void RotateMiddlemen(List<Middleman> middlemen)
+    {
+        if (middlemen.Count > 1)
+        {
+            var firstMiddleman = middlemen[0];
+            middlemen.RemoveAt(0);
+            middlemen.Add(firstMiddleman);
+        }
+    }
+
     static void SimulateDay(List<Middleman> middlemen, ref int currentDay)
     {
         foreach (var middleman in middlemen)
         {
             ShowMenuAndTakeAction(middleman, ref currentDay);
         }
+
+        RotateMiddlemen(middlemen);
+
         currentDay++;
     }
 

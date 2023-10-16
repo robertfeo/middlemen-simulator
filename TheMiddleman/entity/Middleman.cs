@@ -4,6 +4,8 @@ namespace TheMiddleman.Entity
     {
         public string? Name { get; set; }
         public string? Company { get; set; }
+
+        public int AccountBalance { get; set; }
     }
 }
 
