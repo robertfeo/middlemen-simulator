@@ -33,19 +33,19 @@ class Program
 
     static int GetInitialBalance()
     {
-        Console.WriteLine("Choose a difficulty level (Einfach, Normal, Schwer):");
-        string difficulty = Console.ReadLine() ?? "Normal";
+        Console.WriteLine("Schwierigkeitsgrad auswählen (Einfach, Normal, Schwer):");
+        string difficulty = Console.ReadLine()?.ToLower() ?? "normal";
 
         switch (difficulty)
         {
-            case "Einfach":
+            case "einfach":
                 return 15000;
-            case "Normal":
+            case "normal":
                 return 10000;
-            case "Schwer":
+            case "schwer":
                 return 7000;
             default:
-                return 10000;  // Default to Normal
+                return 10000;
         }
     }
 
@@ -64,7 +64,7 @@ class Program
 
     static void DisplayMiddlemanInfo(Middleman middleman, int currentDay)
     {
-        Console.WriteLine($"{middleman.Name} von {middleman.Company} | Tag {currentDay}");
+        Console.WriteLine($"{middleman.Name} von {middleman.Company} | ${middleman.AccountBalance} | Tag {currentDay}");
         Console.WriteLine("b) Runde beenden");
     }
 
