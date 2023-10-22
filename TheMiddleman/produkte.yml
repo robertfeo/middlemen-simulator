@@ -1,44 +1,66 @@
 - name: Gurke
   durability: 21
+  baseprice: 5
 - name: Aprikose
   durability: 4
+  baseprice: 20
 - name: Tomate
   durability: 10
+  baseprice: 7
 - name: Kartoffel
   durability: 30
+  baseprice: 3
 - name: Zwiebel
   durability: 40
+  baseprice: 2
 - name: Karotte
   durability: 20
+  baseprice: 4
 - name: Apfel
   durability: 14
+  baseprice: 6
 - name: Banane
   durability: 7
+  baseprice: 10
 - name: Orangensaft
   durability: 5
+  baseprice: 12
 - name: Milch
   durability: 3
+  baseprice: 8
 - name: Käse
   durability: 25
+  baseprice: 15
 - name: Schokolade
   durability: 180
+  baseprice: 20
 - name: Brot
   durability: 5
+  baseprice: 5
 - name: Wasser
   durability: 365
+  baseprice: 1
 - name: Ei
   durability: 21
+  baseprice: 3
 - name: Hähnchenbrust
   durability: 4
+  baseprice: 10
 - name: Tofu
   durability: 10
+  baseprice: 12
 - name: Lachs
   durability: 3
+  baseprice: 25
 - name: Erdbeeren
   durability: 7
+  baseprice: 15
 - name: Salat
   durability: 7
+  baseprice: 6
 - name: Joghurt
   durability: 14
+  baseprice: 8
 - name: Olivenöl
   durability: 365
+  baseprice: 30

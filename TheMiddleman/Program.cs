@@ -4,13 +4,13 @@ using TheMiddleman.Entity;
 
 class Program
 {
-    static int GetNumMiddlemen()
+    static int GetAmountOfMiddlemen()
     {
         Console.WriteLine("Wieviel Zwischenhändler nehmen teil?");
         return int.Parse(Console.ReadLine() ?? "0");
     }
 
-    static string GetName(int index)
+    static string GetMiddlemanName(int index)
     {
         Console.WriteLine($"Name von Zwischenhändler {index}:");
         return Console.ReadLine() ?? "";
@@ -24,11 +24,11 @@ class Program
 
     static Middleman CreateMiddleman(int index)
     {
-        string name = GetName(index);
-        string company = GetCompany(name);
+        string middlemanName = GetMiddlemanName(index);
+        string companyName = GetCompany(middlemanName);
         int initialBalance = GetInitialBalance();
 
-        return new Middleman { Name = name, Company = company, AccountBalance = initialBalance };
+        return new Middleman(middlemanName, companyName, initialBalance);
     }
 
     static int GetInitialBalance()
@@ -52,20 +52,17 @@ class Program
     static List<Middleman> InitializeMiddlemen()
     {
         List<Middleman> middlemen = new List<Middleman>();
-        int numMiddlemen = GetNumMiddlemen();
-
-        for (int i = 1; i <= numMiddlemen; i++)
+        int amountOfMiddlemen = GetAmountOfMiddlemen();
+        for (int i = 1; i <= amountOfMiddlemen; i++)
         {
             middlemen.Add(CreateMiddleman(i));
         }
-
         return middlemen;
     }
 
     static void DisplayMiddlemanInfo(Middleman middleman, int currentDay)
     {
         Console.WriteLine($"{middleman.Name} von {middleman.Company} | ${middleman.AccountBalance} | Tag {currentDay}");
-        Console.WriteLine("b) Runde beenden");
     }
 
 
@@ -79,6 +76,11 @@ class Program
         return int.Parse(line.Substring(14));
     }
 
+    static int ReadProductBasePrice(string line)
+    {
+        return int.Parse(line.Substring(13));
+    }
+
     static Product CreateProduct(int id, string name, int durability)
     {
         return new Product { Id = id, Name = name, Durability = durability };
@@ -88,7 +90,7 @@ class Program
     {
         string[] lines = System.IO.File.ReadAllLines("produkte.yml");
         List<Product> products = new List<Product>();
-        Product currentProduct = null;
+        Product? currentProduct = null;
         int idCounter = 1;
 
         foreach (var line in lines)
@@ -107,35 +109,148 @@ class Program
                     products.Add(currentProduct);
                 }
             }
+            else if (line.StartsWith("  baseprice: "))
+            {
+                int basePrice = ReadProductBasePrice(line);
+                if (currentProduct != null)
+                {
+                    currentProduct.BasePrice = basePrice;
+                }
+            }
         }
 
         return products;
     }
 
-    static void ShowMenuAndTakeAction(Middleman middleman, ref int currentDay)
+    static void ShowMenuAndTakeAction(Middleman middleman, ref int currentDay, List<Product> products)
     {
-        DisplayMiddlemanInfo(middleman, currentDay);
-        Console.WriteLine("e) Einkaufen");
-        Console.WriteLine("b) Runde beenden");
-        string option = Console.ReadLine() ?? "";
+        bool endRound = false;
 
-        if (option == "b")
+        while (!endRound)
         {
-            //
+            DisplayMiddlemanInfo(middleman, currentDay);
+            Console.WriteLine("e) Einkaufen");
+            Console.WriteLine("v) Verkaufen");
+            Console.WriteLine("b) Runde beenden");
+
+            string userChoice = Console.ReadLine() ?? "";
+
+            switch (userChoice)
+            {
+                case "b":
+                    endRound = true;
+                    break;
+                case "e":
+                    ShowShoppingMenu(products, middleman);
+                    endRound = false;
+                    break;
+                case "v":
+                    ShowSellingMenu(middleman);
+                    break;
+                default:
+                    Console.WriteLine("Ungültige Auswahl. Bitte erneut versuchen.");
+                    break;
+            }
         }
-        else if (option == "e")
+    }
+
+    static void ShowShoppingMenu(List<Product> products, Middleman middleman)
+    {
+        Console.WriteLine("Verfügbare Produkte:");
+        foreach (Product product in products)
         {
-            Console.WriteLine("Verfügbare Produkte:");
-            foreach (var product in middleman.Products)
-            {
-                Console.WriteLine($"{product.Id}) {product.Name} ({product.Durability} Tage)");
-            }
-            Console.WriteLine("z) Zurück");
-            if (Console.ReadLine() == "z")
-            {
-                // Go back to the main menu
-            }
+            Console.WriteLine($"{product.Id} {product.Name} ({product.Durability} Tage) ${product.BasePrice}/Stück");
         }
+        Console.WriteLine("z) Zurück");
+
+        string? userChoice = Console.ReadLine();
+
+        if (userChoice == "z")
+        {
+            return;
+        }
+
+        int selectedProductId;
+
+        if (!int.TryParse(userChoice, out selectedProductId) || int.Parse(userChoice) <= 0)
+        {
+            return;
+        }
+
+        Product selectedProduct = products.Find(p => p.Id == selectedProductId);
+
+        Console.WriteLine($"Wieviel von {selectedProduct.Name} kaufen?");
+        int quantity = int.Parse(Console.ReadLine());
+
+        if (quantity <= 0)
+        {
+            return;
+        }
+
+        int totalCost = quantity * selectedProduct.BasePrice;
+
+        if (middleman.AccountBalance < totalCost)
+        {
+            Console.WriteLine("Nicht genügend Geld vorhanden.");
+            return;
+        }
+        else
+        {
+            middleman.AccountBalance -= totalCost;
+
+            if (middleman.OwnedProducts.ContainsKey(selectedProduct))
+            {
+                middleman.OwnedProducts[selectedProduct] += quantity;
+            }
+            else
+            {
+                middleman.OwnedProducts.Add(selectedProduct, quantity);
+            }
+
+            Console.WriteLine($"Kauf erfolgreich. Neuer Kontostand: ${middleman.AccountBalance}");
+        }
+    }
+
+    static void ShowSellingMenu(Middleman middleman)
+    {
+        Console.WriteLine("Produkte im Besitz:");
+        int index = 1;
+        foreach (var entry in middleman.OwnedProducts)
+        {
+            Console.WriteLine($"{index}) {entry.Key.Name} ({entry.Value}) ${entry.Key.SellingPrice}/Stück");
+            index++;
+        }
+        Console.WriteLine("z) Zurück");
+
+        string userChoice = Console.ReadLine() ?? "";
+        if (userChoice == "z")
+        {
+            return;
+        }
+
+        int selectedProductIndex = int.Parse(userChoice);
+        var selectedEntry = middleman.OwnedProducts.ElementAt(selectedProductIndex - 1);
+        var selectedProduct = selectedEntry.Key;
+        var availableQuantity = selectedEntry.Value;
+
+        Console.WriteLine($"Wieviel von {selectedProduct.Name} verkaufen (max. {availableQuantity})?");
+        int quantityToSell = int.Parse(Console.ReadLine() ?? "0");
+
+        if (quantityToSell <= 0 || quantityToSell > availableQuantity)
+        {
+            Console.WriteLine("Ungültige Menge.");
+            return;
+        }
+
+        middleman.AccountBalance += quantityToSell * selectedProduct.SellingPrice;
+        middleman.OwnedProducts[selectedProduct] -= quantityToSell;
+
+        if (middleman.OwnedProducts[selectedProduct] == 0)
+        {
+            middleman.OwnedProducts.Remove(selectedProduct);
+        }
+
+        Console.WriteLine($"Verkauf erfolgreich. Neuer Kontostand: ${middleman.AccountBalance}");
     }
 
     static void RotateMiddlemen(List<Middleman> middlemen)
@@ -148,11 +263,11 @@ class Program
         }
     }
 
-    static void SimulateDay(List<Middleman> middlemen, ref int currentDay)
+    static void SimulateDay(List<Middleman> middlemen, ref int currentDay, List<Product> products)
     {
         foreach (var middleman in middlemen)
         {
-            ShowMenuAndTakeAction(middleman, ref currentDay);
+            ShowMenuAndTakeAction(middleman, ref currentDay, products);
         }
 
         RotateMiddlemen(middlemen);
@@ -163,11 +278,12 @@ class Program
     static void Main()
     {
         List<Middleman> middlemen = InitializeMiddlemen();
+        List<Product> products = ReadProducts();
         int currentDay = 1;
 
         while (true)
         {
-            SimulateDay(middlemen, ref currentDay);
+            SimulateDay(middlemen, ref currentDay, products);
         }
     }
 }
