@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using TheMiddleman.Entity;
 
@@ -35,7 +35,7 @@ class Program
             case "schwer":
                 return 7000;
             default:
-                return 10000;
+                return -1;
         }
     }
 
@@ -166,21 +166,28 @@ class Program
         SelectProductAndPurchase(middleman, userChoice, products);
     }
 
-    static void SelectProductAndPurchase(Middleman middleman ,string? userChoice, List<Product> products)
+    static void SelectProductAndPurchase(Middleman middleman, string? userChoice, List<Product> products)
     {
         int selectedProductId;
         if (!int.TryParse(userChoice, out selectedProductId) || int.Parse(userChoice) <= 0)
         {
             return;
         }
-        Product selectedProduct = products.Find(p => p.Id == selectedProductId);
-        Console.WriteLine($"Wieviel von {selectedProduct.Name} kaufen?");
-        int quantity = int.Parse(Console.ReadLine());
-        if (quantity <= 0)
+        Product? selectedProduct = products.Find(p => p.Id == selectedProductId);
+        if (selectedProduct == null)
         {
             return;
         }
-        ExecutePurchase(middleman, selectedProduct, quantity);
+        else
+        {
+            Console.WriteLine($"Wieviel von {selectedProduct.Name} kaufen?");
+            int quantity = int.Parse(Console.ReadLine());
+            if (quantity <= 0)
+            {
+                return;
+            }
+            ExecutePurchase(middleman, selectedProduct, quantity);
+        }
     }
 
     static void ExecutePurchase(Middleman middleman, Product selectedProduct, int quantity)
@@ -211,6 +218,11 @@ class Program
         {
             return;
         }
+        SelectProductAndSell(middleman, userChoice);
+    }
+
+    private static void SelectProductAndSell(Middleman middleman, string userChoice)
+    {
         int selectedProductIndex = int.Parse(userChoice);
         var selectedEntry = middleman.OwnedProducts.ElementAt(selectedProductIndex - 1);
         var selectedProduct = selectedEntry.Key;
