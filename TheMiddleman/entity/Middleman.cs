@@ -1,4 +1,4 @@
-using System.Collections.Generic;  // Add this line
+using System.Collections.Generic;
 
 namespace TheMiddleman.Entity
 {
@@ -10,10 +10,10 @@ namespace TheMiddleman.Entity
             Company = company;
             AccountBalance = accountBalance;
         }
-
         public string? Name { get; }
         public string? Company { get; }
         public int AccountBalance { get; set; }
-        public Dictionary<Product, int> OwnedProducts { get; set; } = new Dictionary<Product, int>();
+        public static int MaxStorageCapacity { get; set; } = 100;
+        public Dictionary<Product, int> Warehouse { get; set; } = new Dictionary<Product, int>();
     }
 }
