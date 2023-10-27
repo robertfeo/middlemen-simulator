@@ -60,7 +60,18 @@ class Program
 
     static void DisplayMiddlemanInfo(Middleman middleman, int currentDay)
     {
-        Console.WriteLine($"{middleman.Name} von {middleman.Company} | ${middleman.AccountBalance} | Tag {currentDay}");
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("==========================================");
+        Console.ResetColor();
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine($"{middleman.Name} von {middleman.Company}");
+        Console.ResetColor();
+        Console.WriteLine($"Kontostand: ${middleman.AccountBalance}");
+        Console.WriteLine($"Lagerkapazität: {middleman.Warehouse.Values.Sum()}/{Middleman.MaxStorageCapacity}");
+        Console.WriteLine($"Tag: {currentDay}");
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("==========================================");
+        Console.ResetColor();
     }
 
     static string ReadProductName(string line)
@@ -113,8 +124,40 @@ class Program
                     currentProduct.BasePrice = basePrice;
                 }
             }
+            else if (line.StartsWith("  minProductionRate: "))
+            {
+                int minProductionRate = int.Parse(line.Substring(20));
+                if (currentProduct != null)
+                {
+                    currentProduct.MinProductionRate = minProductionRate;
+                }
+            }
+            else if (line.StartsWith("  maxProductionRate: "))
+            {
+                int maxProductionRate = int.Parse(line.Substring(20));
+                if (currentProduct != null)
+                {
+                    currentProduct.MaxProductionRate = maxProductionRate;
+                }
+            }
         }
         return products;
+    }
+
+    static void CalculateProductAvailability(ref List<Product> products)
+    {
+        Random random = new Random();
+        foreach (Product product in products)
+        {
+            int maxAvailability = product.MaxProductionRate * product.Durability;
+
+            double weight = 0.3;
+            int productionToday = (int)((weight * product.MaxProductionRate) + ((1 - weight) * random.Next(product.MinProductionRate, product.MaxProductionRate + 1)));
+
+            product.AvailableQuantity += productionToday;
+            product.AvailableQuantity = Math.Max(0, product.AvailableQuantity);
+            product.AvailableQuantity = Math.Min(maxAvailability, product.AvailableQuantity);
+        }
     }
 
     static void ShowMenuAndTakeAction(Middleman middleman, ref int currentDay, List<Product> products)
@@ -123,6 +166,9 @@ class Program
         while (!endRound)
         {
             DisplayMiddlemanInfo(middleman, currentDay);
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("Wählen Sie eine Option:");
+            Console.ResetColor();
             Console.WriteLine("e) Einkaufen");
             Console.WriteLine("v) Verkaufen");
             Console.WriteLine("b) Runde beenden");
@@ -152,11 +198,24 @@ class Program
 
     static void ShowShoppingMenu(List<Product> products, Middleman middleman)
     {
+        Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine("Verfügbare Produkte:");
+        string header = "| ID   | Name                | Haltbarkeit     | Verfügbar        | Preis       |";
+        string divider = "|------|---------------------|-----------------|------------------|-------------|";
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine(header);
+        Console.WriteLine(divider);
+        Console.ResetColor();
         foreach (Product product in products)
         {
-            Console.WriteLine($"{product.Id} {product.Name} ({product.Durability} Tage) ${product.BasePrice}/Stück");
+            string id = product.Id.ToString().PadRight(4);
+            string name = product.Name.PadRight(19);
+            string durability = $"{product.Durability} Tage".PadRight(15);
+            string availableQuantity = $"Verfügbar: {product.AvailableQuantity}".PadRight(16);
+            string basePrice = $"${product.BasePrice}/Stück".PadRight(11);
+            Console.WriteLine($"| {id} | {name} | {durability} | {availableQuantity} | {basePrice} |");
         }
+        Console.ResetColor();
         Console.WriteLine("z) Zurück");
         string? userChoice = Console.ReadLine();
         if (userChoice == "z")
@@ -181,25 +240,47 @@ class Program
         else
         {
             Console.WriteLine($"Wieviel von {selectedProduct.Name} kaufen?");
-            int quantity = int.Parse(Console.ReadLine());
+            int quantity = int.Parse(Console.ReadLine() ?? "");
             if (quantity <= 0)
             {
                 return;
             }
-            ExecutePurchase(middleman, selectedProduct, quantity);
+            else
+            {
+                ExecutePurchase(middleman, selectedProduct, quantity);
+            }
         }
     }
 
     static void ExecutePurchase(Middleman middleman, Product selectedProduct, int quantity)
     {
         int totalCost = quantity * selectedProduct.BasePrice;
+        int totalQuantityAfterPurchase = middleman.Warehouse.Values.Sum() + quantity;
+        if (totalQuantityAfterPurchase > Middleman.MaxStorageCapacity)
+        {
+            Console.WriteLine("Kein Platz mehr im Lager.");
+            return;
+        }
         if (middleman.AccountBalance < totalCost)
         {
             Console.WriteLine("Nicht genügend Geld vorhanden.");
             return;
         }
+        if (selectedProduct.AvailableQuantity < quantity)
+        {
+            Console.WriteLine("Nicht genügend Ware vorhanden.");
+            return;
+        }
+        selectedProduct.AvailableQuantity -= quantity;
         middleman.AccountBalance -= totalCost;
-        middleman.OwnedProducts.Add(selectedProduct, quantity);
+        if (middleman.Warehouse.ContainsKey(selectedProduct))
+        {
+            middleman.Warehouse[selectedProduct] += quantity;
+        }
+        else
+        {
+            middleman.Warehouse.Add(selectedProduct, quantity);
+        }
         Console.WriteLine($"Kauf erfolgreich. Neuer Kontostand: ${middleman.AccountBalance}");
     }
 
@@ -207,7 +288,7 @@ class Program
     {
         Console.WriteLine("Produkte im Besitz:");
         int index = 1;
-        foreach (var entry in middleman.OwnedProducts)
+        foreach (var entry in middleman.Warehouse)
         {
             Console.WriteLine($"{index}) {entry.Key.Name} ({entry.Value}) ${entry.Key.SellingPrice}/Stück");
             index++;
@@ -224,7 +305,7 @@ class Program
     private static void SelectProductAndSell(Middleman middleman, string userChoice)
     {
         int selectedProductIndex = int.Parse(userChoice);
-        var selectedEntry = middleman.OwnedProducts.ElementAt(selectedProductIndex - 1);
+        var selectedEntry = middleman.Warehouse.ElementAt(selectedProductIndex - 1);
         var selectedProduct = selectedEntry.Key;
         var availableQuantity = selectedEntry.Value;
         Console.WriteLine($"Wieviel von {selectedProduct.Name} verkaufen (max. {availableQuantity})?");
@@ -239,12 +320,12 @@ class Program
 
     static void ExecuteSale(Middleman middleman, Product selectedProduct, int quantityToSell)
     {
-        middleman.AccountBalance += quantityToSell * selectedProduct.SellingPrice;
-        middleman.OwnedProducts[selectedProduct] -= quantityToSell;
-        if (middleman.OwnedProducts[selectedProduct] == 0)
+        middleman.Warehouse[selectedProduct] -= quantityToSell;
+        if (middleman.Warehouse[selectedProduct] == 0)
         {
-            middleman.OwnedProducts.Remove(selectedProduct);
+            middleman.Warehouse.Remove(selectedProduct);
         }
+        middleman.AccountBalance += quantityToSell * selectedProduct.SellingPrice;
         Console.WriteLine($"Verkauf erfolgreich. Neuer Kontostand: ${middleman.AccountBalance}");
     }
 
@@ -260,6 +341,10 @@ class Program
 
     static void SimulateDay(List<Middleman> middlemen, ref int currentDay, List<Product> products)
     {
+        if (currentDay > 1)
+        {
+            CalculateProductAvailability(ref products);
+        }
         foreach (var middleman in middlemen)
         {
             ShowMenuAndTakeAction(middleman, ref currentDay, products);
