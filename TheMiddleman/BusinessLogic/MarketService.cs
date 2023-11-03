@@ -17,6 +17,21 @@ public class MarketService
         {
             _productService.CalculateProductAvailability(products);
         }
-        // The logic for rotating middlemen and simulating actions can be moved here.
+        foreach (var middleman in middlemen)
+        {
+            ShowMenuAndTakeAction(middleman, ref currentDay, products);
+        }
+        RotateMiddlemen(middlemen);
+        currentDay++;
+    }
+
+    private static void RotateMiddlemen(List<Middleman> middlemen)
+    {
+        if (middlemen.Count > 1)
+        {
+            var firstMiddleman = middlemen[0];
+            middlemen.RemoveAt(0);
+            middlemen.Add(firstMiddleman);
+        }
     }
 }
