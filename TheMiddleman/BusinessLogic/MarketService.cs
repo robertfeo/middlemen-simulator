@@ -6,7 +6,7 @@ public class MarketService
     private readonly MiddlemanService _middlemanService;
     public Action<Middleman, int> OnDayStart { get; set; } = delegate { };
     public Action<int> OnDayChange { get; set; } = delegate { };
-    public int currentDay = 1;
+    public int currentDay = 0;
     private List<Product> _products;
     private List<Middleman> _middlemen;
 
