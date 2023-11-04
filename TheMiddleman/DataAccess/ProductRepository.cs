@@ -4,9 +4,11 @@ namespace TheMiddleman.DataAccess
     {
         private readonly string _filePath;
 
-        public ProductRepository(string filePath)
+        private List<Product> _products = null!;
+
+        public ProductRepository()
         {
-            _filePath = filePath;
+            _filePath = "./produkte.yml";
         }
 
         public string ReadProductName(string line)
@@ -29,10 +31,10 @@ namespace TheMiddleman.DataAccess
             return new Product { Id = id, Name = name, Durability = durability };
         }
 
-        public List<Product> GetAllProducts()
+        public List<Product> InitializeAllProducts()
         {
             string[] lines = File.ReadAllLines(_filePath);
-            List<Product> products = new List<Product>();
+            _products = new List<Product>();
             Product? currentProduct = null;
             int idCounter = 1;
             foreach (var line in lines)
@@ -48,7 +50,7 @@ namespace TheMiddleman.DataAccess
                     {
                         int durability = ReadProductDurability(line);
                         currentProduct.Durability = durability;
-                        products.Add(currentProduct);
+                        _products.Add(currentProduct);
                     }
                 }
                 else if (line.StartsWith("  baseprice: "))
@@ -76,7 +78,12 @@ namespace TheMiddleman.DataAccess
                     }
                 }
             }
-            return products;
+            return _products;
+        }
+
+        public List<Product> GetAllProducts()
+        {
+            return _products;
         }
     }
 }

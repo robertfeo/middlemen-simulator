@@ -4,34 +4,51 @@ public class MarketService
 {
     private readonly ProductService _productService;
     private readonly MiddlemanService _middlemanService;
+    public Action<Middleman, int> OnDayStart { get; set; } = delegate { };
+    public Action<int> OnDayChange { get; set; } = delegate { };
+    public int currentDay = 1;
+    private List<Product> _products;
+    private List<Middleman> _middlemen;
 
-    public MarketService(ProductService productService, MiddlemanService middlemanService)
+    public MarketService()
     {
-        _productService = productService;
-        _middlemanService = middlemanService;
+        _productService = new ProductService();
+        _middlemanService = new MiddlemanService();
+        _middlemen = _middlemanService.GetAllMiddlemen();
+        _products = _productService.GetAllProducts();
     }
 
-    public void SimulateDay(List<Middleman> middlemen, List<Product> products, int currentDay)
+    public MiddlemanService getMiddlemanService()
+    {
+        return _middlemanService;
+    }
+
+    public ProductService getProductService()
+    {
+        return _productService;
+    }
+
+    public void SimulateDay()
     {
         if (currentDay > 1)
         {
-            _productService.CalculateProductAvailability(products);
+            _productService.CalculateProductAvailability();
         }
-        foreach (var middleman in middlemen)
+        foreach (var middleman in _middlemen)
         {
-            ShowMenuAndTakeAction(middleman, ref currentDay, products);
+            OnDayStart.Invoke(middleman, currentDay);
         }
-        RotateMiddlemen(middlemen);
+        RotateMiddlemen();
         currentDay++;
     }
 
-    private static void RotateMiddlemen(List<Middleman> middlemen)
+    private void RotateMiddlemen()
     {
-        if (middlemen.Count > 1)
+        if (_middlemen.Count > 1)
         {
-            var firstMiddleman = middlemen[0];
-            middlemen.RemoveAt(0);
-            middlemen.Add(firstMiddleman);
+            var firstMiddleman = _middlemen[0];
+            _middlemen.RemoveAt(0);
+            _middlemen.Add(firstMiddleman);
         }
     }
 }

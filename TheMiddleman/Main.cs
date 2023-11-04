@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using TheMiddleman.Entity;
 
 class Program
 {
-    static int GetAmountOfMiddlemen()
+    /* static int GetAmountOfMiddlemen()
     {
         Console.WriteLine("Wieviel Zwischenhändler nehmen teil?");
         return int.Parse(Console.ReadLine() ?? "0");
@@ -351,16 +348,11 @@ class Program
         }
         RotateMiddlemen(middlemen);
         currentDay++;
-    }
+    } */
 
     static void Main()
     {
-        List<Middleman> middlemen = InitializeAllMiddlemen();
-        List<Product> products = ReadProducts();
-        int currentDay = 1;
-        while (true)
-        {
-            SimulateDay(middlemen, ref currentDay, products);
-        }
+        Game game = new Game();
+        game.Run();
     }
 }

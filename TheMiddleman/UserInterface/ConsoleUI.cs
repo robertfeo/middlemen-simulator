@@ -1,46 +1,73 @@
+using System.Reflection.Metadata;
 using TheMiddleman.Entity;
 
 public class ConsoleUI
 {
     private readonly MarketService _marketService;
-    private readonly ProductService _productService;
-    private readonly MiddlemanService _middlemanService;
 
-    public ConsoleUI(MarketService marketService, ProductService productService, MiddlemanService middlemanService)
+    public ConsoleUI(MarketService marketService)
     {
         _marketService = marketService;
-        _productService = productService;
-        _middlemanService = middlemanService;
+        _marketService.OnDayStart += ShowMenuAndTakeAction;
     }
 
-    public void Start()
+    public void RunSimulation()
     {
-        // Logic to initialize the game, such as loading middlemen and products
-    }
-
-    public void SimulateDay(List<Middleman> middlemen, List<Product> products, int currentDay)
-    {
-        _marketService.SimulateDay(middlemen, products, currentDay);
-    }
-
-    private void ShowMenuAndTakeAction(Middleman middleman, ref int currentDay, List<Product> products)
-    {
-        bool endRound = false;
-        while (!endRound)
+        InitializeMiddlemen();
+        while (true)
         {
-            DisplayMiddlemanInfo(middleman, currentDay);
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Wählen Sie eine Option:");
-            Console.ResetColor();
-            Console.WriteLine("e) Einkaufen");
-            Console.WriteLine("v) Verkaufen");
-            Console.WriteLine("b) Runde beenden");
-            string userChoice = Console.ReadLine() ?? "";
-            HandleUserChoice(userChoice, middleman, products, ref endRound);
+            _marketService.SimulateDay();
         }
     }
 
-    static void DisplayMiddlemanInfo(Middleman middleman, int currentDay)
+    private int GetAmountOfMiddlemen()
+    {
+        Console.WriteLine("Wieviel Zwischenhändler nehmen teil?");
+        return int.Parse(Console.ReadLine() ?? "0");
+    }
+
+    private string GetMiddlemanName(int index)
+    {
+        Console.WriteLine($"Name von Zwischenhändler {index}:");
+        return Console.ReadLine() ?? "";
+    }
+
+    private string GetCompany(string name)
+    {
+        Console.WriteLine($"Name der Firma von {name}:");
+        return Console.ReadLine() ?? "";
+    }
+
+    private int GetInitialBalance()
+    {
+        Console.WriteLine("Schwierigkeitsgrad auswählen (Einfach, Normal, Schwer):");
+        string difficulty = Console.ReadLine()?.ToLower() ?? "normal";
+        switch (difficulty)
+        {
+            case "einfach":
+                return 15000;
+            case "normal":
+                return 10000;
+            case "schwer":
+                return 7000;
+            default:
+                return -1;
+        }
+    }
+
+    private void InitializeMiddlemen()
+    {
+        int amountOfMiddlemen = GetAmountOfMiddlemen();
+        for (int id = 1; id <= amountOfMiddlemen; id++)
+        {
+            string middlemanName = GetMiddlemanName(id);
+            string companyName = GetCompany(middlemanName);
+            int initialBalance = GetInitialBalance();
+            _marketService.getMiddlemanService().CreateAndStoreMiddleman(middlemanName, companyName, initialBalance);
+        }
+    }
+
+    private void DisplayMiddlemanInfo(Middleman middleman, int currentDay)
     {
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine("==========================================");
@@ -56,7 +83,24 @@ public class ConsoleUI
         Console.ResetColor();
     }
 
-    static void HandleUserChoice(string choice, Middleman middleman, List<Product> products, ref bool endRound)
+    private void ShowMenuAndTakeAction(Middleman middleman, int currentDay)
+    {
+        bool endRound = false;
+        while (!endRound)
+        {
+            DisplayMiddlemanInfo(middleman, currentDay);
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("Wählen Sie eine Option:");
+            Console.ResetColor();
+            Console.WriteLine("e) Einkaufen");
+            Console.WriteLine("v) Verkaufen");
+            Console.WriteLine("b) Runde beenden");
+            string userChoice = Console.ReadLine() ?? "";
+            HandleUserChoice(userChoice, middleman, ref endRound);
+        }
+    }
+
+    private void HandleUserChoice(string choice, Middleman middleman, ref bool endRound)
     {
         switch (choice)
         {
@@ -64,7 +108,7 @@ public class ConsoleUI
                 endRound = true;
                 break;
             case "e":
-                ShowShoppingMenu(products, middleman);
+                ShowShoppingMenu(middleman);
                 break;
             case "v":
                 ShowSellingMenu(middleman);
@@ -75,7 +119,7 @@ public class ConsoleUI
         }
     }
 
-    static void ShowShoppingMenu(List<Product> products, Middleman middleman)
+    private void ShowShoppingMenu(Middleman middleman)
     {
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine("Verfügbare Produkte:");
@@ -85,7 +129,7 @@ public class ConsoleUI
         Console.WriteLine(header);
         Console.WriteLine(divider);
         Console.ResetColor();
-        foreach (Product product in products)
+        foreach (Product product in _marketService.getProductService().GetAllProducts())
         {
             string id = product.Id.ToString().PadRight(4);
             string name = product.Name.PadRight(19);
@@ -101,10 +145,10 @@ public class ConsoleUI
         {
             return;
         }
-        SelectProductAndPurchase(middleman, userChoice, products);
+        SelectProductAndPurchase(middleman, userChoice, _marketService.getProductService().GetAllProducts());
     }
 
-    static void ShowSellingMenu(Middleman middleman)
+    private void ShowSellingMenu(Middleman middleman)
     {
         Console.WriteLine("Produkte im Besitz:");
         int index = 1;
@@ -122,14 +166,16 @@ public class ConsoleUI
         SelectProductAndSell(middleman, userChoice);
     }
 
-    static void SelectProductAndPurchase(Middleman middleman, string? userChoice, List<Product> products)
+    private void SelectProductAndPurchase(Middleman middleman, string? userChoice, List<Product> products)
     {
         int selectedProductId;
         if (!int.TryParse(userChoice, out selectedProductId) || int.Parse(userChoice) <= 0)
         {
             return;
         }
+
         Product? selectedProduct = products.Find(p => p.Id == selectedProductId);
+
         if (selectedProduct == null)
         {
             return;
@@ -144,12 +190,12 @@ public class ConsoleUI
             }
             else
             {
-                ExecutePurchase(middleman, selectedProduct, quantity);
+                _marketService.getMiddlemanService().ProcessPurchase(middleman, selectedProduct, quantity);
             }
         }
     }
 
-    private static void SelectProductAndSell(Middleman middleman, string userChoice)
+    private void SelectProductAndSell(Middleman middleman, string userChoice)
     {
         int selectedProductIndex = int.Parse(userChoice);
         var selectedEntry = middleman.Warehouse.ElementAt(selectedProductIndex - 1);
@@ -162,8 +208,6 @@ public class ConsoleUI
             Console.WriteLine("Ungültige Menge.");
             return;
         }
-        ExecuteSale(middleman, selectedProduct, quantityToSell);
+        _marketService.getMiddlemanService().ProcessSale(middleman, selectedProduct, quantityToSell);
     }
-
-    // Other methods such as DisplayMiddlemanInfo, HandleUserChoice, ShowShoppingMenu, etc.
 }
