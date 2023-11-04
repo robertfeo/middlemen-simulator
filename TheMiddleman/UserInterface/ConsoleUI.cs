@@ -57,6 +57,7 @@ public class ConsoleUI
 
     private void InitializeMiddlemen()
     {
+        Console.Clear();
         int amountOfMiddlemen = GetAmountOfMiddlemen();
         for (int id = 1; id <= amountOfMiddlemen; id++)
         {
@@ -65,6 +66,7 @@ public class ConsoleUI
             int initialBalance = GetInitialBalance();
             _marketService.getMiddlemanService().CreateAndStoreMiddleman(middlemanName, companyName, initialBalance);
         }
+        Console.Clear();
     }
 
     private void DisplayMiddlemanInfo(Middleman middleman, int currentDay)
@@ -121,6 +123,7 @@ public class ConsoleUI
 
     private void ShowShoppingMenu(Middleman middleman)
     {
+        Console.Clear();
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine("Verfügbare Produkte:");
         string header = "| ID   | Name                | Haltbarkeit     | Verfügbar        | Preis       |";
