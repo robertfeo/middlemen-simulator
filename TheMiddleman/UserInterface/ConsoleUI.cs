@@ -17,6 +17,7 @@ public class ConsoleUI
         while (true)
         {
             _marketService.SimulateDay();
+            Console.Clear();
         }
     }
 
@@ -212,5 +213,6 @@ public class ConsoleUI
             return;
         }
         _marketService.getMiddlemanService().ProcessSale(middleman, selectedProduct, quantityToSell);
+        Console.WriteLine($"Verkauf erfolgreich. Neuer Kontostand: ${middleman.AccountBalance}");
     }
 }

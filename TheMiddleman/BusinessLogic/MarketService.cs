@@ -7,7 +7,6 @@ public class MarketService
     public Action<Middleman, int> OnDayStart { get; set; } = delegate { };
     public Action<int> OnDayChange { get; set; } = delegate { };
     public int currentDay = 1;
-    private List<Product> _products;
     private List<Middleman> _middlemen;
 
     public MarketService()
@@ -15,7 +14,6 @@ public class MarketService
         _productService = new ProductService();
         _middlemanService = new MiddlemanService();
         _middlemen = _middlemanService.GetAllMiddlemen();
-        _products = _productService.GetAllProducts();
     }
 
     public MiddlemanService getMiddlemanService()
