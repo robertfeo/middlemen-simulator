@@ -15,8 +15,9 @@ public class ProductService
     {
         foreach (Product product in productRepository.GetAllProducts())
         {
+            product.AvailableQuantity = 0;
             int maxAvailability = product.MaxProductionRate * product.Durability;
-            double weight = 0.8;
+            double weight = 0.1;
             int productionToday = (int)((weight * product.MaxProductionRate) + ((1 - weight) * random.Next(product.MinProductionRate, product.MaxProductionRate + 1)));
             product.AvailableQuantity += productionToday;
             product.AvailableQuantity = Math.Max(0, product.AvailableQuantity);
@@ -28,4 +29,9 @@ public class ProductService
     {
         return productRepository.GetAllProducts();
     }
+
+    /* public Product getProductById(int id)
+    {
+        return productRepository.getProductById(id);
+    } */
 }

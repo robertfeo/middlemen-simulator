@@ -1,131 +1,131 @@
 - name: Gurke
   durability: 21
   baseprice: 5
-  minProductionRate: 100
-  maxProductionRate: 500
+  minProductionRate: -100
+  maxProductionRate: 400
 
 - name: Aprikose
   durability: 4
   baseprice: 20
-  minProductionRate: 50
-  maxProductionRate: 200
+  minProductionRate: -50
+  maxProductionRate: 400
 
 - name: Tomate
   durability: 10
   baseprice: 7
-  minProductionRate: 150
-  maxProductionRate: 700
+  minProductionRate: -150
+  maxProductionRate: 400
 
 - name: Kartoffel
   durability: 30
   baseprice: 3
-  minProductionRate: 200
-  maxProductionRate: 900
+  minProductionRate: -200
+  maxProductionRate: 400
 
 - name: Zwiebel
   durability: 40
   baseprice: 2
-  minProductionRate: 300
-  maxProductionRate: 1000
+  minProductionRate: -300
+  maxProductionRate: 400
 
 - name: Karotte
   durability: 20
   baseprice: 4
-  minProductionRate: 200
-  maxProductionRate: 800
+  minProductionRate: -200
+  maxProductionRate: 400
 
 - name: Apfel
   durability: 14
   baseprice: 6
-  minProductionRate: 250
-  maxProductionRate: 1000
+  minProductionRate: -250
+  maxProductionRate: 400
 
 - name: Banane
   durability: 7
   baseprice: 10
-  minProductionRate: 100
-  maxProductionRate: 500
+  minProductionRate: -100
+  maxProductionRate: 400
 
 - name: Orangensaft
   durability: 5
   baseprice: 12
-  minProductionRate: 300
-  maxProductionRate: 1500
+  minProductionRate: -300
+  maxProductionRate: 400
 
 - name: Milch
   durability: 3
   baseprice: 8
-  minProductionRate: 500
-  maxProductionRate: 3000
+  minProductionRate: -500
+  maxProductionRate: 400
 
 - name: Käse
   durability: 25
   baseprice: 15
-  minProductionRate: 100
-  maxProductionRate: 500
+  minProductionRate: -100
+  maxProductionRate: 400
 
 - name: Schokolade
   durability: 180
   baseprice: 20
-  minProductionRate: 50
-  maxProductionRate: 300
+  minProductionRate: -50
+  maxProductionRate: 400
 
 - name: Brot
   durability: 5
   baseprice: 5
-  minProductionRate: 200
-  maxProductionRate: 1000
+  minProductionRate: -200
+  maxProductionRate: 400
 
 - name: Wasser
   durability: 365
   baseprice: 1
-  minProductionRate: 1000
-  maxProductionRate: 5000
+  minProductionRate: -1000
+  maxProductionRate: 400
 
 - name: Ei
   durability: 21
   baseprice: 3
-  minProductionRate: 500
-  maxProductionRate: 2500
+  minProductionRate: -500
+  maxProductionRate: 400
 
 - name: Hähnchenbrust
   durability: 4
   baseprice: 10
-  minProductionRate: 100
-  maxProductionRate: 600
+  minProductionRate: -100
+  maxProductionRate: 400
 
 - name: Tofu
   durability: 10
   baseprice: 12
-  minProductionRate: 150
-  maxProductionRate: 700
+  minProductionRate: -150
+  maxProductionRate: 400
 
 - name: Lachs
   durability: 3
   baseprice: 25
-  minProductionRate: 50
-  maxProductionRate: 250
+  minProductionRate: -50
+  maxProductionRate: 400
 
 - name: Erdbeeren
   durability: 7
   baseprice: 15
-  minProductionRate: 150
-  maxProductionRate: 700
+  minProductionRate: -150
+  maxProductionRate: 400
 
 - name: Salat
   durability: 7
   baseprice: 6
-  minProductionRate: 200
-  maxProductionRate: 900
+  minProductionRate: -200
+  maxProductionRate: 400
 
 - name: Joghurt
   durability: 14
   baseprice: 8
-  minProductionRate: 200
-  maxProductionRate: 1200
+  minProductionRate: -200
+  maxProductionRate: 400
 
 - name: Olivenöl
   durability: 365
   baseprice: 30
-  minProductionRate: 100
-  maxProductionRate: 500
+  minProductionRate: -100
+  maxProductionRate: 400

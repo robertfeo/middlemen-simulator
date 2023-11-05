@@ -80,23 +80,18 @@ public class ConsoleUI
         char topRightCorner = '\u2557';     // '╗' Double down and left
         char bottomLeftCorner = '\u255A';   // '╚' Double up and right
         char bottomRightCorner = '\u255D';  // '╝' Double up and left
-
         // Creating borders with the extended characters
         string topBorder = topLeftCorner + new string(horizontalLine, 42) + topRightCorner;
         string bottomBorder = bottomLeftCorner + new string(horizontalLine, 42) + bottomRightCorner;
-
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine(topBorder);
         Console.ResetColor();
-
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"{verticalLine} {middleman.Name} von {middleman.Company}".PadRight(43) + verticalLine);
         Console.ResetColor();
-
         Console.WriteLine($"{verticalLine} Kontostand: ${middleman.AccountBalance}".PadRight(43) + verticalLine);
         Console.WriteLine($"{verticalLine} Lagerkapazität: {middleman.Warehouse.Values.Sum()}/{Middleman.MaxStorageCapacity}".PadRight(43) + verticalLine);
         Console.WriteLine($"{verticalLine} Tag: {currentDay}".PadRight(43) + verticalLine);
-
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine(bottomBorder);
         Console.ResetColor();
@@ -165,24 +160,40 @@ public class ConsoleUI
         string? userChoice = Console.ReadLine();
         if (userChoice == "z")
         {
+            Console.Clear();
             return;
         }
         SelectProductAndPurchase(middleman, userChoice, _marketService.getProductService().GetAllProducts());
+        ShowShoppingMenu(middleman);
     }
 
     private void ShowSellingMenu(Middleman middleman)
     {
+        Console.Clear();
+        Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine("Produkte im Besitz:");
+        string header = "| ID   | Name                | Menge            | Verkaufspreis    |";
+        string divider = "|------|---------------------|------------------|------------------|";
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine(header);
+        Console.WriteLine(divider);
+        Console.ResetColor();
         int index = 1;
         foreach (var entry in middleman.Warehouse)
         {
-            Console.WriteLine($"{index}) {entry.Key.Name} ({entry.Value}) ${entry.Key.SellingPrice}/Stück");
+            string id = index.ToString().PadRight(4);
+            string name = entry.Key.Name.PadRight(19);
+            string quantity = entry.Value.ToString().PadRight(16);
+            string sellingPrice = $"${entry.Key.SellingPrice}/Stück".PadRight(16);
+            Console.WriteLine($"| {id} | {name} | {quantity} | {sellingPrice} |");
             index++;
         }
+        Console.ResetColor();
         Console.WriteLine("z) Zurück");
         string userChoice = Console.ReadLine() ?? "";
         if (userChoice == "z")
         {
+            Console.Clear();
             return;
         }
         SelectProductAndSell(middleman, userChoice);
@@ -195,20 +206,26 @@ public class ConsoleUI
         {
             return;
         }
-
         Product? selectedProduct = products.Find(p => p.Id == selectedProductId);
-
         if (selectedProduct == null)
         {
             return;
         }
         else
         {
+            if (selectedProduct.AvailableQuantity == 0)
+            {
+                Console.Clear();
+                Console.WriteLine("Dieses Produkt ist nicht mehr verfügbar. Bitte erneut versuchen.\n");
+                ShowShoppingMenu(middleman);
+            }
             Console.WriteLine($"Wieviel von {selectedProduct.Name} kaufen?");
             int quantity = int.Parse(Console.ReadLine() ?? "");
             if (quantity <= 0)
             {
-                return;
+                Console.Clear();
+                Console.WriteLine("Beim letzten Kauf wurde eine ungültige Menge eingegeben. Bitte erneut versuchen.\n");
+                ShowShoppingMenu(middleman);
             }
             else
             {
@@ -227,8 +244,9 @@ public class ConsoleUI
         int quantityToSell = int.Parse(Console.ReadLine() ?? "0");
         if (quantityToSell <= 0 || quantityToSell > availableQuantity)
         {
-            Console.WriteLine("Ungültige Menge.");
-            return;
+            Console.Clear();
+            Console.WriteLine("Beim letzten Verkauf wurde eine ungültige Menge eingegeben. Bitte erneut versuchen.\n");
+            ShowSellingMenu(middleman);
         }
         _marketService.getMiddlemanService().ProcessSale(middleman, selectedProduct, quantityToSell);
         Console.WriteLine($"Verkauf erfolgreich. Neuer Kontostand: ${middleman.AccountBalance}");
