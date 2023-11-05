@@ -9,6 +9,7 @@ public class ConsoleUI
     {
         _marketService = marketService;
         _marketService.OnDayStart += ShowMenuAndTakeAction;
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
     }
 
     public void RunSimulation()
@@ -72,19 +73,35 @@ public class ConsoleUI
 
     private void DisplayMiddlemanInfo(Middleman middleman, int currentDay)
     {
+        // Line drawing characters from CP850 and CP1252 character sets
+        char horizontalLine = '\u2550';     // '═' Double horizontal
+        char verticalLine = '\u2551';       // '║' Double vertical
+        char topLeftCorner = '\u2554';      // '╔' Double down and right
+        char topRightCorner = '\u2557';     // '╗' Double down and left
+        char bottomLeftCorner = '\u255A';   // '╚' Double up and right
+        char bottomRightCorner = '\u255D';  // '╝' Double up and left
+
+        // Creating borders with the extended characters
+        string topBorder = topLeftCorner + new string(horizontalLine, 42) + topRightCorner;
+        string bottomBorder = bottomLeftCorner + new string(horizontalLine, 42) + bottomRightCorner;
+
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine("==========================================");
+        Console.WriteLine(topBorder);
         Console.ResetColor();
+
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"{middleman.Name} von {middleman.Company}");
+        Console.WriteLine($"{verticalLine} {middleman.Name} von {middleman.Company}".PadRight(43) + verticalLine);
         Console.ResetColor();
-        Console.WriteLine($"Kontostand: ${middleman.AccountBalance}");
-        Console.WriteLine($"Lagerkapazität: {middleman.Warehouse.Values.Sum()}/{Middleman.MaxStorageCapacity}");
-        Console.WriteLine($"Tag: {currentDay}");
+
+        Console.WriteLine($"{verticalLine} Kontostand: ${middleman.AccountBalance}".PadRight(43) + verticalLine);
+        Console.WriteLine($"{verticalLine} Lagerkapazität: {middleman.Warehouse.Values.Sum()}/{Middleman.MaxStorageCapacity}".PadRight(43) + verticalLine);
+        Console.WriteLine($"{verticalLine} Tag: {currentDay}".PadRight(43) + verticalLine);
+
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine("==========================================");
+        Console.WriteLine(bottomBorder);
         Console.ResetColor();
     }
+
 
     private void ShowMenuAndTakeAction(Middleman middleman, int currentDay)
     {
@@ -118,6 +135,7 @@ public class ConsoleUI
                 break;
             default:
                 Console.WriteLine("Ungültige Auswahl. Bitte erneut versuchen.");
+                Console.Clear();
                 break;
         }
     }
@@ -214,5 +232,6 @@ public class ConsoleUI
         }
         _marketService.getMiddlemanService().ProcessSale(middleman, selectedProduct, quantityToSell);
         Console.WriteLine($"Verkauf erfolgreich. Neuer Kontostand: ${middleman.AccountBalance}");
+        ShowSellingMenu(middleman);
     }
 }
