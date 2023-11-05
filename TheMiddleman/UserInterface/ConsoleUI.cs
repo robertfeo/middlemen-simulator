@@ -90,7 +90,7 @@ public class ConsoleUI
         Console.WriteLine($"{verticalLine} {middleman.Name} von {middleman.Company}".PadRight(43) + verticalLine);
         Console.ResetColor();
         Console.WriteLine($"{verticalLine} Kontostand: ${middleman.AccountBalance}".PadRight(43) + verticalLine);
-        Console.WriteLine($"{verticalLine} Lagerkapazität: {middleman.Warehouse.Values.Sum()}/{Middleman.MaxStorageCapacity}".PadRight(43) + verticalLine);
+        Console.WriteLine($"{verticalLine} Lagerkapazität: {middleman.Warehouse.Values.Sum()}/{middleman.MaxStorageCapacity}".PadRight(43) + verticalLine);
         Console.WriteLine($"{verticalLine} Tag: {currentDay}".PadRight(43) + verticalLine);
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine(bottomBorder);
@@ -109,6 +109,7 @@ public class ConsoleUI
             Console.ResetColor();
             Console.WriteLine("e) Einkaufen");
             Console.WriteLine("v) Verkaufen");
+            Console.WriteLine("t) Lager vergrößern");
             Console.WriteLine("b) Runde beenden");
             string userChoice = Console.ReadLine() ?? "";
             HandleUserChoice(userChoice, middleman, ref endRound);
@@ -128,11 +129,35 @@ public class ConsoleUI
             case "v":
                 ShowSellingMenu(middleman);
                 break;
+            case "t":
+                ShowExtendingWarehouse(middleman);
+                break;
             default:
                 Console.WriteLine("Ungültige Auswahl. Bitte erneut versuchen.");
                 Console.Clear();
                 break;
         }
+    }
+
+    private void ShowExtendingWarehouse(Middleman middleman)
+    {
+        Console.WriteLine("Um wie viel Einheiten möchten Sie das Lager vergrößern? ($50 pro Einheit)");
+        int increaseAmount;
+        if (!int.TryParse(Console.ReadLine(), out increaseAmount) || increaseAmount <= 0)
+        {
+            Console.WriteLine("Vergrößerung des Lagers abgebrochen.");
+            return;
+        }
+        int costForIncrease = increaseAmount * 50;
+        if (middleman.AccountBalance < costForIncrease)
+        {
+            Console.WriteLine("Nicht genug Geld für die Vergrößerung des Lagers vorhanden.");
+            return;
+        }
+        middleman.AccountBalance -= costForIncrease;
+        _marketService.getMiddlemanService().IncreaseWarehouseCapacity(middleman, increaseAmount);
+        Console.Clear();
+        ShowMenuAndTakeAction(middleman, _marketService.currentDay);
     }
 
     private void ShowShoppingMenu(Middleman middleman)
@@ -152,8 +177,8 @@ public class ConsoleUI
             string name = product.Name.PadRight(19);
             string durability = $"{product.Durability} Tage".PadRight(15);
             string availableQuantity = $"Verfügbar: {product.AvailableQuantity}".PadRight(16);
-            string basePrice = $"${product.BasePrice}/Stück".PadRight(11);
-            Console.WriteLine($"| {id} | {name} | {durability} | {availableQuantity} | {basePrice} |");
+            string purchasePrice = $"${product.PurchasePrice}/Stück".PadRight(11);
+            Console.WriteLine($"| {id} | {name} | {durability} | {availableQuantity} | {purchasePrice} |");
         }
         Console.ResetColor();
         Console.WriteLine("z) Zurück");
@@ -190,13 +215,21 @@ public class ConsoleUI
         }
         Console.ResetColor();
         Console.WriteLine("z) Zurück");
-        string userChoice = Console.ReadLine() ?? "";
+        string userChoice = Console.ReadLine()!;
         if (userChoice == "z")
         {
             Console.Clear();
             return;
         }
-        SelectProductAndSell(middleman, userChoice);
+        else if (int.TryParse(userChoice, out int selectedProductId) && selectedProductId <= 0)
+        {
+            Console.Clear();
+            ShowSellingMenu(middleman);
+        }
+        else
+        {
+            SelectProductAndSell(middleman, userChoice);
+        }
     }
 
     private void SelectProductAndPurchase(Middleman middleman, string? userChoice, List<Product> products)

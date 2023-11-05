@@ -30,7 +30,7 @@ public class MarketService
     {
         if (currentDay > 1)
         {
-            _productService.CalculateProductAvailability();
+            _productService.UpdateProducts();
         }
         foreach (var middleman in _middlemen)
         {

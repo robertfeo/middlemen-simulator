@@ -21,7 +21,7 @@ public class MiddlemanService
     {
         int totalCost = quantity * selectedProduct.BasePrice;
         int totalQuantityAfterPurchase = middleman.Warehouse.Values.Sum() + quantity;
-        if (totalQuantityAfterPurchase > Middleman.MaxStorageCapacity)
+        if (totalQuantityAfterPurchase > middleman.MaxStorageCapacity)
         {
             Console.WriteLine("Kein Platz mehr im Lager.");
             return;
@@ -67,7 +67,12 @@ public class MiddlemanService
     private bool CanStore(Middleman middleman, int quantity)
     {
         int currentStorage = middleman.Warehouse?.Sum(entry => entry.Value) ?? 0;
-        return currentStorage + quantity <= Middleman.MaxStorageCapacity;
+        return currentStorage + quantity <= middleman.MaxStorageCapacity;
+    }
+
+    public void IncreaseWarehouseCapacity(Middleman middleman, int amount)
+    {
+        middleman.MaxStorageCapacity += amount;
     }
 
     public List<Middleman> GetAllMiddlemen()
