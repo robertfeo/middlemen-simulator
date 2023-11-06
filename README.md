@@ -1,1 +1,1 @@
-# hse-dotnet-course
+# middlemen-simulator
