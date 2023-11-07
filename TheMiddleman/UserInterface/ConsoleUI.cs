@@ -73,14 +73,12 @@ public class ConsoleUI
 
     private void DisplayMiddlemanInfo(Middleman middleman, int currentDay)
     {
-        // Line drawing characters from CP850 and CP1252 character sets
         char horizontalLine = '\u2550';     // '═' Double horizontal
         char verticalLine = '\u2551';       // '║' Double vertical
         char topLeftCorner = '\u2554';      // '╔' Double down and right
         char topRightCorner = '\u2557';     // '╗' Double down and left
         char bottomLeftCorner = '\u255A';   // '╚' Double up and right
         char bottomRightCorner = '\u255D';  // '╝' Double up and left
-        // Creating borders with the extended characters
         string topBorder = topLeftCorner + new string(horizontalLine, 42) + topRightCorner;
         string bottomBorder = bottomLeftCorner + new string(horizontalLine, 42) + bottomRightCorner;
         Console.ForegroundColor = ConsoleColor.Cyan;
