@@ -22,7 +22,6 @@ public class ProductService
         {
             int maxAvailability = product.MaxProductionRate * product.Durability;
             int productionToday = (int)RandomValueBetween(product.MinProductionRate, product.MaxProductionRate + 1);
-            Console.WriteLine($"Produkt: {product.Name} | Produktion heute: {productionToday} | Verfügbarkeit: {product.AvailableQuantity} / {maxAvailability}");
             product.AvailableQuantity += productionToday;
             product.AvailableQuantity = Math.Max(0, product.AvailableQuantity);
             product.AvailableQuantity = Math.Min(maxAvailability, product.AvailableQuantity);

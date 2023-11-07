@@ -88,15 +88,5 @@ namespace TheMiddleman.DataAccess
         {
             return _products;
         }
-
-        /* public Product getProductById(int id)
-        {
-            var product = _products?.Find(p => p.Id == id);
-            if (product == null)
-            {
-                throw new ProductNotFoundException($"Produkt mit ID {id} nicht gefunden.");
-            }
-            return product;
-        } */
     }
 }
