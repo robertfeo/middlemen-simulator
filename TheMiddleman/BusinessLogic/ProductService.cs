@@ -2,12 +2,12 @@ using TheMiddleman.DataAccess;
 
 public class ProductService
 {
-    private ProductRepository productRepository;
+    private ProductRepository _productRepository;
 
     public ProductService()
     {
-        productRepository = new ProductRepository();
-        productRepository.InitializeAllProducts();
+        _productRepository = new ProductRepository();
+        _productRepository.InitializeAllProducts();
     }
 
     public void UpdateProducts()
@@ -18,7 +18,7 @@ public class ProductService
 
     private void CalculateProductAvailability()
     {
-        foreach (Product product in productRepository.GetAllProducts())
+        foreach (Product product in _productRepository.GetAllProducts())
         {
             int maxAvailability = product.MaxProductionRate * product.Durability;
             int productionToday = (int)RandomValueBetween(product.MinProductionRate, product.MaxProductionRate + 1);
@@ -30,7 +30,7 @@ public class ProductService
 
     private void UpdateProductPrices()
     {
-        var products = productRepository.GetAllProducts();
+        var products = _productRepository.GetAllProducts();
         foreach (var product in products)
         {
             double maxAvailability = product.MaxProductionRate * product.Durability;
@@ -73,6 +73,6 @@ public class ProductService
 
     public List<Product> GetAllProducts()
     {
-        return productRepository.GetAllProducts();
+        return _productRepository.GetAllProducts();
     }
 }

@@ -8,7 +8,7 @@ public class ConsoleUI
     public ConsoleUI(MarketService marketService)
     {
         _marketService = marketService;
-        _marketService.OnDayStart += ShowMenuAndTakeAction;
+        _marketService._OnDayStart += ShowMenuAndTakeAction;
         Console.OutputEncoding = System.Text.Encoding.UTF8;
     }
 
@@ -210,7 +210,7 @@ public class ConsoleUI
         }
         middleman.AccountBalance -= costForIncrease;
         _marketService.MiddlemanService().IncreaseWarehouseCapacity(middleman, increaseAmount);
-        ShowMenuAndTakeAction(middleman, _marketService.currentDay);
+        ShowMenuAndTakeAction(middleman, _marketService._currentDay);
     }
 
     private void ShowShoppingMenu(Middleman middleman)

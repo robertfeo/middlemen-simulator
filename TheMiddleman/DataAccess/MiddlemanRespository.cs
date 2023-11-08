@@ -4,21 +4,21 @@ namespace TheMiddleman.DataAccess
 {
     public class MiddlemanRespository : IMiddlemanRespository
     {
-        private List<Middleman> middlemen = new List<Middleman>();
+        private List<Middleman> _middlemen = new List<Middleman>();
 
         public int NumberOfParticipatingMiddlemen()
         {
-            return middlemen.Count;
+            return _middlemen.Count;
         }
 
         public void AddMiddleman(Middleman middleman)
         {
-            middlemen.Add(middleman);
+            _middlemen.Add(middleman);
         }
 
         public List<Middleman> RetrieveAllMiddlemen()
         {
-            return middlemen;
+            return _middlemen;
         }
 
         public Middleman RetrieveMiddlemanById(int id)
@@ -27,13 +27,13 @@ namespace TheMiddleman.DataAccess
             {
                 throw new ArgumentException("Id darf nicht negativ sein.");
             }
-            else if (id >= middlemen.Count)
+            else if (id >= _middlemen.Count)
             {
                 throw new ArgumentException("Id darf nicht größer als die Anzahl der Middlemen sein.");
             }
             else
             {
-                return middlemen[id];
+                return _middlemen[id];
             }
         }
     }
