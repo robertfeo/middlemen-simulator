@@ -13,15 +13,15 @@ public class MarketService
     {
         _productService = new ProductService();
         _middlemanService = new MiddlemanService();
-        _middlemen = _middlemanService.GetAllMiddlemen();
+        _middlemen = _middlemanService.RetrieveAllMiddlemen();
     }
 
-    public MiddlemanService getMiddlemanService()
+    public MiddlemanService MiddlemanService()
     {
         return _middlemanService;
     }
 
-    public ProductService getProductService()
+    public ProductService ProductService()
     {
         return _productService;
     }
@@ -36,11 +36,11 @@ public class MarketService
         {
             OnDayStart.Invoke(middleman, currentDay);
         }
-        RotateMiddlemen();
+        ChangeMiddlemanOrder();
         currentDay++;
     }
 
-    private void RotateMiddlemen()
+    private void ChangeMiddlemanOrder()
     {
         if (_middlemen.Count > 1)
         {

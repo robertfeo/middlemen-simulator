@@ -6,7 +6,7 @@ namespace TheMiddleman.DataAccess
     {
         private List<Middleman> middlemen = new List<Middleman>();
 
-        public int GetAmountOfMiddlemen()
+        public int NumberOfParticipatingMiddlemen()
         {
             return middlemen.Count;
         }
@@ -16,9 +16,25 @@ namespace TheMiddleman.DataAccess
             middlemen.Add(middleman);
         }
 
-        public List<Middleman> GetAllMiddlemen()
+        public List<Middleman> RetrieveAllMiddlemen()
         {
             return middlemen;
+        }
+
+        public Middleman RetrieveMiddlemanById(int id)
+        {
+            if (id < 0)
+            {
+                throw new ArgumentException("Id darf nicht negativ sein.");
+            }
+            else if (id >= middlemen.Count)
+            {
+                throw new ArgumentException("Id darf nicht größer als die Anzahl der Middlemen sein.");
+            }
+            else
+            {
+                return middlemen[id];
+            }
         }
     }
 }
