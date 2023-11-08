@@ -7,6 +7,5 @@ namespace TheMiddleman.DataAccess
         List<Middleman> RetrieveAllMiddlemen();
         int NumberOfParticipatingMiddlemen();
         void AddMiddleman(Middleman middleman);
-        Middleman RetrieveMiddlemanById(int v);
     }
 }
