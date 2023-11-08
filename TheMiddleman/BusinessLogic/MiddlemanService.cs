@@ -74,9 +74,4 @@ public class MiddlemanService
     {
         return _middlemanRepository.RetrieveAllMiddlemen();
     }
-
-    internal Middleman RetrieveMiddlemanById(int v)
-    {
-        return _middlemanRepository.RetrieveMiddlemanById(v);
-    }
 }
