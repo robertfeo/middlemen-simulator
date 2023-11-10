@@ -7,7 +7,7 @@ public class ProductService
     public ProductService()
     {
         _productRepository = new ProductRepository();
-        _productRepository.InitializeAllProducts();
+        _productRepository.CreateProducts();
     }
 
     public void UpdateProducts()

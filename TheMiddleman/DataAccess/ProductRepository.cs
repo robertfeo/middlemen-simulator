@@ -34,7 +34,7 @@ namespace TheMiddleman.DataAccess
             return new Product { Id = id, Name = name, Durability = durability };
         }
 
-        public List<Product> InitializeAllProducts()
+        public List<Product> CreateProducts()
         {
             string[] lines = File.ReadAllLines(_filePath);
             _products = new List<Product>();
