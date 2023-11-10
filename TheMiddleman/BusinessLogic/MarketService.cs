@@ -34,6 +34,7 @@ public class MarketService
         }
         foreach (var middleman in _middlemen)
         {
+            _middlemanService.DeductStorageCosts(middleman);
             _OnDayStart.Invoke(middleman, _currentDay);
         }
         ChangeMiddlemanOrder();
