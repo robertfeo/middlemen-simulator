@@ -5,6 +5,7 @@ namespace TheMiddleman.DataAccess
     public class MiddlemanRespository : IMiddlemanRespository
     {
         private List<Middleman> _middlemen = new List<Middleman>();
+        private List<Middleman> _bankruptMiddlemen = new List<Middleman>();
 
         public int NumberOfParticipatingMiddlemen()
         {
@@ -19,6 +20,11 @@ namespace TheMiddleman.DataAccess
         public List<Middleman> RetrieveAllMiddlemen()
         {
             return _middlemen;
+        }
+
+        public List<Middleman> RetrieveBankruptMiddlemen()
+        {
+            return _bankruptMiddlemen;
         }
     }
 }

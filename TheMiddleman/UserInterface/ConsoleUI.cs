@@ -9,7 +9,23 @@ public class ConsoleUI
     {
         _marketService = marketService;
         _marketService._OnDayStart += ShowMenuAndTakeAction;
+        _marketService._OnBankruptcy += HandleBankruptcy;
+        _marketService._OnEndOfGame += ShowEndOfGame;
         Console.OutputEncoding = System.Text.Encoding.UTF8;
+    }
+
+    private void ShowEndOfGame(List<Middleman> bankruptMiddlemen)
+    {
+        Console.WriteLine($"Simulation beendet, da alle {bankruptMiddlemen.Count} Zwischenhändler bankrott gegangen sind.");
+    }
+
+    private void HandleBankruptcy(Middleman middleman)
+    {
+        if(_marketService.MiddlemanService().RetrieveAllMiddlemen().Count == 1)
+        {
+            return;
+        }
+        Console.WriteLine($"{middleman.Name} ist Bankrott gegangen und wird ausgeschlossen.");
     }
 
     public void RunSimulation()
@@ -165,7 +181,6 @@ public class ConsoleUI
 
     private void EndRound(ref bool endRound)
     {
-        Console.Clear();
         endRound = true;
     }
 
