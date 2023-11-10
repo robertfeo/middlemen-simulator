@@ -4,8 +4,8 @@ namespace TheMiddleman.DataAccess
 {
     public interface IMiddlemanRespository
     {
-        List<Middleman> GetAllMiddlemen();
-        int GetAmountOfMiddlemen();
+        List<Middleman> RetrieveAllMiddlemen();
+        int NumberOfParticipatingMiddlemen();
         void AddMiddleman(Middleman middleman);
     }
 }

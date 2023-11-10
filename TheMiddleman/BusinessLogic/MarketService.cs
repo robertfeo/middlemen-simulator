@@ -4,43 +4,43 @@ public class MarketService
 {
     private readonly ProductService _productService;
     private readonly MiddlemanService _middlemanService;
-    public Action<Middleman, int> OnDayStart { get; set; } = delegate { };
-    public Action<int> OnDayChange { get; set; } = delegate { };
-    public int currentDay = 1;
+    public Action<Middleman, int> _OnDayStart { get; set; } = delegate { };
+    public Action<int> _OnDayChange { get; set; } = delegate { };
+    public int _currentDay = 1;
     private List<Middleman> _middlemen;
 
     public MarketService()
     {
         _productService = new ProductService();
         _middlemanService = new MiddlemanService();
-        _middlemen = _middlemanService.GetAllMiddlemen();
+        _middlemen = _middlemanService.RetrieveAllMiddlemen();
     }
 
-    public MiddlemanService getMiddlemanService()
+    public MiddlemanService MiddlemanService()
     {
         return _middlemanService;
     }
 
-    public ProductService getProductService()
+    public ProductService ProductService()
     {
         return _productService;
     }
 
     public void SimulateDay()
     {
-        if (currentDay > 1)
+        if (_currentDay > 1)
         {
             _productService.UpdateProducts();
         }
         foreach (var middleman in _middlemen)
         {
-            OnDayStart.Invoke(middleman, currentDay);
+            _OnDayStart.Invoke(middleman, _currentDay);
         }
-        RotateMiddlemen();
-        currentDay++;
+        ChangeMiddlemanOrder();
+        _currentDay++;
     }
 
-    private void RotateMiddlemen()
+    private void ChangeMiddlemanOrder()
     {
         if (_middlemen.Count > 1)
         {

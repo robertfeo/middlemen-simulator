@@ -4,21 +4,21 @@ namespace TheMiddleman.DataAccess
 {
     public class MiddlemanRespository : IMiddlemanRespository
     {
-        private List<Middleman> middlemen = new List<Middleman>();
+        private List<Middleman> _middlemen = new List<Middleman>();
 
-        public int GetAmountOfMiddlemen()
+        public int NumberOfParticipatingMiddlemen()
         {
-            return middlemen.Count;
+            return _middlemen.Count;
         }
 
         public void AddMiddleman(Middleman middleman)
         {
-            middlemen.Add(middleman);
+            _middlemen.Add(middleman);
         }
 
-        public List<Middleman> GetAllMiddlemen()
+        public List<Middleman> RetrieveAllMiddlemen()
         {
-            return middlemen;
+            return _middlemen;
         }
     }
 }

@@ -10,6 +10,7 @@ namespace TheMiddleman.Entity
             Company = company;
             AccountBalance = accountBalance;
         }
+        public int Id { get; set; }
         public string? Name { get; }
         public string? Company { get; }
         public int AccountBalance { get; set; }

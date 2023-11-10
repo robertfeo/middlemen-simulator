@@ -17,23 +17,19 @@ public class MiddlemanService
         return middleman;
     }
 
-    public void ProcessPurchase(Middleman middleman, Product selectedProduct, int quantity)
+    public void Purchase(Middleman middleman, Product selectedProduct, int quantity, out string errorLog)
     {
+        errorLog = "";
         int totalCost = quantity * selectedProduct.BasePrice;
         int totalQuantityAfterPurchase = middleman.Warehouse.Values.Sum() + quantity;
         if (totalQuantityAfterPurchase > middleman.MaxStorageCapacity)
         {
-            Console.WriteLine("Kein Platz mehr im Lager.");
+            errorLog = "Kein Platz mehr im Lager. Verfügbarer Platz: " + (middleman.MaxStorageCapacity - middleman.Warehouse.Values.Sum()) + " Einheiten.";
             return;
         }
         if (middleman.AccountBalance < totalCost)
         {
-            Console.WriteLine("Nicht genügend Geld vorhanden.");
-            return;
-        }
-        if (selectedProduct.AvailableQuantity < quantity)
-        {
-            Console.WriteLine("Nicht genügend Ware vorhanden.");
+            errorLog = "Nicht genügend Geld vorhanden. Verfügbares Guthaben: $" + middleman.AccountBalance;
             return;
         }
         selectedProduct.AvailableQuantity -= quantity;
@@ -46,11 +42,21 @@ public class MiddlemanService
         {
             middleman.Warehouse.Add(selectedProduct, quantity);
         }
-        Console.WriteLine($"Kauf erfolgreich. Neuer Kontostand: ${middleman.AccountBalance}");
     }
 
-    public void ProcessSale(Middleman middleman, Product product, int quantity)
+    public void Sale(Middleman middleman, Product product, int quantity, out string errorLog)
     {
+        errorLog = "";
+        if (!middleman.Warehouse.ContainsKey(product))
+        {
+            errorLog = "Produkt ist nicht im Lager vorhanden.";
+            return;
+        }
+        if (middleman.Warehouse[product] < quantity)
+        {
+            errorLog = $"Nicht genug {product.Name} im Lager. Verfügbar: {middleman.Warehouse[product]} Einheiten.";
+            return;
+        }
         middleman.Warehouse[product] -= quantity;
         if (middleman.Warehouse[product] == 0)
         {
@@ -59,24 +65,13 @@ public class MiddlemanService
         middleman.AccountBalance += quantity * product.SellingPrice;
     }
 
-    private bool CanPurchase(Middleman middleman, Product product, int quantity, int totalCost)
-    {
-        return middleman.AccountBalance >= totalCost && product.AvailableQuantity >= quantity && CanStore(middleman, quantity);
-    }
-
-    private bool CanStore(Middleman middleman, int quantity)
-    {
-        int currentStorage = middleman.Warehouse?.Sum(entry => entry.Value) ?? 0;
-        return currentStorage + quantity <= middleman.MaxStorageCapacity;
-    }
-
     public void IncreaseWarehouseCapacity(Middleman middleman, int amount)
     {
         middleman.MaxStorageCapacity += amount;
     }
 
-    public List<Middleman> GetAllMiddlemen()
+    public List<Middleman> RetrieveAllMiddlemen()
     {
-        return _middlemanRepository.GetAllMiddlemen();
+        return _middlemanRepository.RetrieveAllMiddlemen();
     }
 }
