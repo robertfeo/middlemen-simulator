@@ -70,6 +70,19 @@ public class MiddlemanService
         middleman.MaxStorageCapacity += amount;
     }
 
+    public int CalculateStorageCosts(Middleman middleman)
+    {
+        int occupiedUnits = middleman.Warehouse.Values.Sum();
+        int emptyUnits = middleman.MaxStorageCapacity - occupiedUnits;
+        return occupiedUnits * 5 + emptyUnits * 1;
+    }
+
+    public void DeductStorageCosts(Middleman middleman)
+    {
+        int storageCosts = CalculateStorageCosts(middleman);
+        middleman.AccountBalance -= storageCosts;
+    }
+
     public List<Middleman> RetrieveAllMiddlemen()
     {
         return _middlemanRepository.RetrieveAllMiddlemen();
