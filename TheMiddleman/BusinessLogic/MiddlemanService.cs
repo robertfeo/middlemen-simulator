@@ -20,8 +20,8 @@ public class MiddlemanService
     public void Purchase(Middleman middleman, Product selectedProduct, int quantity, out string errorLog)
     {
         errorLog = "";
-        int totalCost = quantity * selectedProduct.BasePrice;
-        int totalQuantityAfterPurchase = middleman.Warehouse.Values.Sum() + quantity;
+        var totalCost = quantity * selectedProduct.BasePrice;
+        var totalQuantityAfterPurchase = middleman.Warehouse.Values.Sum() + quantity;
         if (totalQuantityAfterPurchase > middleman.MaxStorageCapacity)
         {
             errorLog = "Kein Platz mehr im Lager. Verfügbarer Platz: " + (middleman.MaxStorageCapacity - middleman.Warehouse.Values.Sum()) + " Einheiten.";
@@ -72,19 +72,23 @@ public class MiddlemanService
 
     public int CalculateStorageCosts(Middleman middleman)
     {
-        int occupiedUnits = middleman.Warehouse.Values.Sum();
-        int emptyUnits = middleman.MaxStorageCapacity - occupiedUnits;
+        var occupiedUnits = middleman.Warehouse.Values.Sum();
+        var emptyUnits = middleman.MaxStorageCapacity - occupiedUnits;
         return occupiedUnits * 5 + emptyUnits * 1;
     }
 
     public void DeductStorageCosts(Middleman middleman)
     {
-        int storageCosts = CalculateStorageCosts(middleman);
+        var storageCosts = CalculateStorageCosts(middleman);
         middleman.AccountBalance -= storageCosts;
     }
 
     public List<Middleman> RetrieveAllMiddlemen()
     {
         return _middlemanRepository.RetrieveAllMiddlemen();
+    }
+
+    public List<Middleman> RetrieveBankruptMiddlemen(){
+        return _middlemanRepository.RetrieveBankruptMiddlemen();
     }
 }
