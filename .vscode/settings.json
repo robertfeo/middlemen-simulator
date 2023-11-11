@@ -1,3 +1,4 @@
 {
-    "dotnet.defaultSolution": "TheMiddleman.sln"
+    "dotnet.defaultSolution": "TheMiddleman.sln",
+    "commentTranslate.multiLineMerge": false
 }

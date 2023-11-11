@@ -9,6 +9,7 @@ public class MarketService
     public Action<Middleman> _OnBankruptcy { get; set; } = delegate { };
     public Action<List<Middleman>> _OnEndOfGame { get; set; } = delegate { };
     public int _currentDay = 1;
+    private int _simulationDuration;
     private List<Middleman> _middlemen;
     private List<Middleman> _bankruptMiddlemen;
 
@@ -58,12 +59,20 @@ public class MarketService
 
     private void CheckForEndOfSimulation()
     {
-        if (!_middlemen.Any())
+        if (_currentDay > _simulationDuration || _middlemen.Count == 0)
         {
-            _OnEndOfGame.Invoke(_bankruptMiddlemen);
-            Console.WriteLine();
-            Environment.Exit(0);
+            EndSimulation();
         }
+    }
+
+    private void EndSimulation()
+    {
+        if (_middlemen.Count > 0)
+        {
+            _middlemen.Sort((x, y) => y.AccountBalance.CompareTo(x.AccountBalance));
+        }
+        _OnEndOfGame.Invoke(_middlemen);
+        Environment.Exit(0);
     }
 
     private void ChangeMiddlemanOrder()
@@ -74,5 +83,15 @@ public class MarketService
             _middlemen.RemoveAt(0);
             _middlemen.Add(firstMiddleman);
         }
+    }
+
+    public bool CheckIfMiddlemanIsLastBankroped(Middleman middleman)
+    {
+        return _middlemen.Count == 1 && _middlemen[0] == middleman;
+    }
+
+    public void SetSimulationDuration(int duration)
+    {
+        _simulationDuration = duration;
     }
 }
