@@ -57,6 +57,11 @@ public class MarketService
         CheckForEndOfSimulation();
     }
 
+    public void InitiatePurchase(Middleman middleman, int productId, int quantity)
+    {
+        // Business logic for purchasing products...
+    }
+
     private void CheckForEndOfSimulation()
     {
         if (_currentDay > _simulationDuration || _middlemen.Count == 0)

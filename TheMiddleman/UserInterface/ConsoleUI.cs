@@ -217,6 +217,41 @@ public class ConsoleUI
     private void InitiateShopping(Middleman middleman)
     {
         ShowShoppingMenu(middleman);
+        int selectedProductId = GetUserSelectedProductId();
+        int quantity = GetUserSelectedQuantity();
+        _marketService.InitiatePurchase(middleman, selectedProductId, quantity);
+    }
+
+    private int GetUserSelectedProductId()
+    {
+        Console.WriteLine("Bitte wählen Sie ein Produkt durch Eingabe der Produkt-ID:");
+        while (true)
+        {
+            if (int.TryParse(Console.ReadLine(), out int productId) && productId > 0)
+            {
+                return productId;
+            }
+            else
+            {
+                ShowErrorLog("Ungültige Produkt-ID. Bitte erneut versuchen.");
+            }
+        }
+    }
+
+    private int GetUserSelectedQuantity()
+    {
+        Console.WriteLine("Bitte geben Sie die Menge ein:");
+        while (true)
+        {
+            if (int.TryParse(Console.ReadLine(), out int quantity) && quantity > 0)
+            {
+                return quantity;
+            }
+            else
+            {
+                ShowErrorLog("Ungültige Menge. Bitte erneut versuchen.");
+            }
+        }
     }
 
     private void InitiateSelling(Middleman middleman)
