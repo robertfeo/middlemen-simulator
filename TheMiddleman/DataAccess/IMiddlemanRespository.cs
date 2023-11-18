@@ -8,5 +8,6 @@ namespace TheMiddleman.DataAccess
         List<Middleman> RetrieveBankruptMiddlemen();
         int NumberOfParticipatingMiddlemen();
         void AddMiddleman(Middleman middleman);
+        List<Product> GetOwnedProducts(Middleman middleman);
     }
 }

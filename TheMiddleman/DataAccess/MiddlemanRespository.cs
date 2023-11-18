@@ -26,5 +26,10 @@ namespace TheMiddleman.DataAccess
         {
             return _bankruptMiddlemen;
         }
+
+        public List<Product> GetOwnedProducts(Middleman middleman)
+        {
+            return middleman.Warehouse.Keys.ToList();
+        }
     }
 }

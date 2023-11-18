@@ -36,7 +36,6 @@ public class ProductService
             double maxAvailability = product.MaxProductionRate * product.Durability;
             double availabilityPercentage = product.AvailableQuantity / maxAvailability;
             product.PurchasePrice = (int)CalculateNewProductPrice(product, availabilityPercentage);
-            //Console.WriteLine($"Produkt: {product.Name} | Verfügbarkeit: {Math.Round(availabilityPercentage * 100, 2)}% ({product.AvailableQuantity} / {maxAvailability})");
         }
     }
 
@@ -59,7 +58,6 @@ public class ProductService
             priceChangePercentage = RandomValueBetween(-0.10, 0.06);
             newPurchasePrice = product.BasePrice * (1 + priceChangePercentage);
         }
-        //Console.WriteLine($"Preisänderung in Prozent: {Math.Round(priceChangePercentage * 100, 2)}%");
         newPurchasePrice = Math.Max(newPurchasePrice, product.BasePrice * 0.25);
         newPurchasePrice = Math.Min(newPurchasePrice, product.BasePrice * 3);
         return newPurchasePrice;
@@ -74,5 +72,19 @@ public class ProductService
     public List<Product> GetAllProducts()
     {
         return _productRepository.GetAllProducts();
+    }
+
+    public Product? FindProductById(int productId)
+    {
+        var _products = _productRepository.GetAllProducts();
+        if(_products.Any(p => p.Id == productId))
+        {
+            return _products.First(p => p.Id == productId);
+        }
+        else
+        {
+            ConsoleUI.ShowErrorLog("Produkt nicht gefunden!");
+            return null;
+        }
     }
 }
