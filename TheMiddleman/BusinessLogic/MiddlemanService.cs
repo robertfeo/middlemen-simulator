@@ -44,19 +44,8 @@ public class MiddlemanService
         }
     }
 
-    public void Sale(Middleman middleman, Product product, int quantity, out string errorLog)
+    public void Sale(Middleman middleman, Product product, int quantity)
     {
-        errorLog = "";
-        if (!middleman.Warehouse.ContainsKey(product))
-        {
-            errorLog = "Produkt ist nicht im Lager vorhanden.";
-            return;
-        }
-        if (middleman.Warehouse[product] < quantity)
-        {
-            errorLog = $"Nicht genug {product.Name} im Lager. Verfügbar: {middleman.Warehouse[product]} Einheiten.";
-            return;
-        }
         middleman.Warehouse[product] -= quantity;
         if (middleman.Warehouse[product] == 0)
         {
@@ -65,9 +54,22 @@ public class MiddlemanService
         middleman.AccountBalance += quantity * product.SellingPrice;
     }
 
-    public void IncreaseWarehouseCapacity(Middleman middleman, int amount)
+    public void IncreaseWarehouseCapacity(Middleman middleman)
     {
-        middleman.MaxStorageCapacity += amount;
+        int increaseAmount;
+        if (!int.TryParse(ConsoleUI.GetUserInput(), out increaseAmount) || increaseAmount <= 0)
+        {
+            ConsoleUI.ShowErrorLog("Vergrößerung des Lagers abgebrochen.");
+            return;
+        }
+        int costForIncrease = increaseAmount * 50;
+        if (middleman.AccountBalance < costForIncrease)
+        {
+            ConsoleUI.ShowErrorLog($"Nicht genug Geld für die Vergrößerung des Lagers vorhanden.\nVerfügbares Guthaben: ${middleman.AccountBalance}");
+            return;
+        }
+        middleman.AccountBalance -= costForIncrease;
+        middleman.MaxStorageCapacity += increaseAmount;
     }
 
     public int CalculateStorageCosts(Middleman middleman)
@@ -88,7 +90,13 @@ public class MiddlemanService
         return _middlemanRepository.RetrieveAllMiddlemen();
     }
 
-    public List<Middleman> RetrieveBankruptMiddlemen(){
+    public List<Middleman> RetrieveBankruptMiddlemen()
+    {
         return _middlemanRepository.RetrieveBankruptMiddlemen();
+    }
+
+    public List<Product> GetOwnedProducts(Middleman middleman)
+    {
+        return _middlemanRepository.GetOwnedProducts(middleman);
     }
 }
