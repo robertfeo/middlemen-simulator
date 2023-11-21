@@ -1,6 +1,6 @@
 using TheMiddleman.Entity;
-namespace TheMiddleman.DataAccess
 
+namespace TheMiddleman.DataAccess
 {
     public class MiddlemanRespository : IMiddlemanRespository
     {

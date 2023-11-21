@@ -1,4 +1,3 @@
-
 using System.Runtime.Serialization;
 
 namespace TheMiddleman.DataAccess
@@ -6,7 +5,6 @@ namespace TheMiddleman.DataAccess
     public class ProductRepository : IProductRepository
     {
         private readonly string _filePath;
-
         private List<Product> _products = null!;
 
         public ProductRepository()
@@ -44,44 +42,69 @@ namespace TheMiddleman.DataAccess
             {
                 if (line.StartsWith("- name: "))
                 {
-                    string name = ReadProductName(line);
-                    currentProduct = CreateProduct(idCounter++, name, 0);
+                    currentProduct = ProcessProductName(line, ref idCounter);
                 }
                 else if (line.StartsWith("  durability: "))
                 {
-                    if (currentProduct != null)
-                    {
-                        int durability = ReadProductDurability(line);
-                        currentProduct.Durability = durability;
-                        _products.Add(currentProduct);
-                    }
+                    ProcessProductDurability(line, currentProduct);
                 }
                 else if (line.StartsWith("  baseprice: "))
                 {
-                    int basePrice = ReadProductBasePrice(line);
-                    if (currentProduct != null)
-                    {
-                        currentProduct.BasePrice = basePrice;
-                    }
+                    ProcessProductBasePrice(line, currentProduct);
                 }
                 else if (line.StartsWith("  minProductionRate: "))
                 {
-                    int minProductionRate = int.Parse(line.Substring(20));
-                    if (currentProduct != null)
-                    {
-                        currentProduct.MinProductionRate = minProductionRate;
-                    }
+                    ProcessMinProductionRate(line, currentProduct);
                 }
                 else if (line.StartsWith("  maxProductionRate: "))
                 {
-                    int maxProductionRate = int.Parse(line.Substring(20));
-                    if (currentProduct != null)
-                    {
-                        currentProduct.MaxProductionRate = maxProductionRate;
-                    }
+                    ProcessMaxProductionRate(line, currentProduct);
                 }
             }
             return _products;
+        }
+
+        private void ProcessMaxProductionRate(string line, Product? currentProduct)
+        {
+            int maxProductionRate = int.Parse(line.Substring(20));
+            if (currentProduct != null)
+            {
+                currentProduct.MaxProductionRate = maxProductionRate;
+            }
+        }
+
+        private void ProcessMinProductionRate(string line, Product? currentProduct)
+        {
+            int minProductionRate = int.Parse(line.Substring(20));
+            if (currentProduct != null)
+            {
+                currentProduct.MinProductionRate = minProductionRate;
+            }
+        }
+
+        private Product? ProcessProductName(string line, ref int idCounter)
+        {
+            string name = ReadProductName(line);
+            return CreateProduct(idCounter++, name, 0);
+        }
+
+        private void ProcessProductDurability(string line, Product? product)
+        {
+            if (product != null)
+            {
+                int durability = ReadProductDurability(line);
+                product.Durability = durability;
+                _products.Add(product);
+            }
+        }
+
+        private void ProcessProductBasePrice(string line, Product? product)
+        {
+            if (product != null)
+            {
+                int basePrice = ReadProductBasePrice(line);
+                product.BasePrice = basePrice;
+            }
         }
 
         public List<Product> GetAllProducts()
