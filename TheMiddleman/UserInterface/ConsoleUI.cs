@@ -9,7 +9,7 @@ public class ConsoleUI
     {
         _marketService = marketService;
         _marketService._OnDayStart += ShowMenuAndTakeAction;
-        _marketService._OnBankruptcy += HandleBankruptcy;
+        _marketService._OnBankruptcy += ShowMiddlemanBankroped;
         _marketService._OnEndOfGame += ShowEndOfGame;
         _marketService._OnStartOfGame += ShowCreationMiddlemen;
         Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -56,7 +56,7 @@ public class ConsoleUI
         }
     }
 
-    private void HandleBankruptcy(Middleman middleman)
+    private void ShowMiddlemanBankroped(Middleman middleman)
     {
         if (_marketService.CheckIfMiddlemanIsLastBankroped(middleman))
         {
