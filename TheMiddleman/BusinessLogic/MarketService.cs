@@ -38,17 +38,14 @@ public class MarketService
         _OnStartOfGame.Invoke();
         while (_currentDay <= _simulationDuration && _middlemen.Count > 0)
         {
-            ConsoleUI.PrintDayInFrame(_currentDay);
+            ConsoleUI.ShowCurrentDay(_currentDay);
             SimulateDay();
         }
     }
 
     public void SimulateDay()
     {
-        if (_currentDay > 1)
-        {
-            _productService.UpdateProducts();
-        }
+        if (_currentDay > 1) { _productService.UpdateProducts(); }
         foreach (var middleman in _middlemen)
         {
             _middlemanService.DeductStorageCosts(middleman);
@@ -71,40 +68,28 @@ public class MarketService
 
     public void InitiateSelling(Middleman middleman, string userInput)
     {
-        if (!ValidateSelectedProductForSelling(userInput, middleman, out Product? selectedProduct))
-        {
-            return;
-        }
+        if (!ValidateSelectedProductForSelling(userInput, middleman, out Product? selectedProduct)) { return; }
         if (selectedProduct == null)
         {
             ConsoleUI.ShowErrorLog("Es wurde kein Produkt ausgewählt.\n");
             return;
         }
         string quantityInput = AskQuantity($"Wieviel von {selectedProduct.Name} verkaufen?");
-        if (!ValidateQuantityToSell(middleman, quantityInput, selectedProduct, out int quantityToSell))
-        {
-            return;
-        }
+        if (!ValidateQuantityToSell(middleman, quantityInput, selectedProduct, out int quantityToSell)) { return; }
         _middlemanService.Sale(middleman, selectedProduct, quantityToSell);
         ConsoleUI.ShowMessage($"Sie haben {quantityToSell}x {selectedProduct.Name} verkauft.");
     }
 
     public void InitiatePurchase(Middleman middleman, string userInput)
     {
-        if (!ValidateSelectedProduct(userInput, out Product? selectedProduct))
-        {
-            return;
-        }
+        if (!ValidateSelectedProduct(userInput, out Product? selectedProduct)) { return; }
         if (selectedProduct == null)
         {
             ConsoleUI.ShowErrorLog("Es wurde kein Produkt ausgewählt.\n");
             return;
         }
         string quantityInput = AskQuantity($"Wieviel von {selectedProduct.Name} kaufen?");
-        if (!ValidateQuantityToBuy(quantityInput, selectedProduct, out int quantityToBuy))
-        {
-            return;
-        }
+        if (!ValidateQuantityToBuy(quantityInput, selectedProduct, out int quantityToBuy)) { return; }
         _middlemanService.Purchase(middleman, selectedProduct, quantityToBuy, out string errorLog);
         if (!string.IsNullOrEmpty(errorLog))
         {
@@ -192,10 +177,7 @@ public class MarketService
 
     private void CheckForEndOfSimulation()
     {
-        if (_currentDay > _simulationDuration || _middlemen.Count == 0)
-        {
-            EndSimulation();
-        }
+        if (_currentDay > _simulationDuration || _middlemen.Count == 0) { EndSimulation(); }
     }
 
     private void EndSimulation()

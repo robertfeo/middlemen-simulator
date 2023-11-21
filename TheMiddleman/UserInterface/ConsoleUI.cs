@@ -205,13 +205,13 @@ public class ConsoleUI
                 EndRound(ref endRound);
                 break;
             case "e":
-                InitiateShopping(middleman);
+                ShowShopping(middleman);
                 break;
             case "v":
-                InitiateSelling(middleman);
+                ShowSelling(middleman);
                 break;
             case "t":
-                InitiateWarehouseExpansion(middleman);
+                ShowWarehouseExpansion(middleman);
                 break;
             default:
                 NotifyInvalidMenuChoice();
@@ -224,7 +224,7 @@ public class ConsoleUI
         endRound = true;
     }
 
-    private void InitiateShopping(Middleman middleman)
+    private void ShowShopping(Middleman middleman)
     {
         ShowShoppingMenu();
         Console.WriteLine("z) Zurück");
@@ -239,7 +239,7 @@ public class ConsoleUI
         }
     }
 
-    private void InitiateSelling(Middleman middleman)
+    private void ShowSelling(Middleman middleman)
     {
         ShowSellingMenu(middleman);
         string userChoice = GetUserInput();
@@ -253,7 +253,7 @@ public class ConsoleUI
         }
     }
 
-    private void InitiateWarehouseExpansion(Middleman middleman)
+    private void ShowWarehouseExpansion(Middleman middleman)
     {
         ShowExtendingWarehouse(middleman);
     }
@@ -267,7 +267,6 @@ public class ConsoleUI
     {
         ShowMessage("Um wie viel Einheiten möchten Sie das Lager vergrößern? ($50 pro Einheit)");
         _marketService.MiddlemanService().IncreaseWarehouseCapacity(middleman);
-        ShowMenuAndTakeAction(middleman, _marketService._currentDay);
     }
 
     private void ShowAllProducts()
@@ -376,7 +375,7 @@ public class ConsoleUI
             $"{("$" + product.PurchasePrice.ToString() + "/Stück").PadRight(priceWidth)}");
     }
 
-    public static void PrintDayInFrame(int currentDay)
+    public static void ShowCurrentDay(int currentDay)
     {
         string dayText = $"Tag {currentDay}";
         int padding = 4;
@@ -393,7 +392,6 @@ public class ConsoleUI
         Console.WriteLine(bottomLeftCorner + new string(horizontalLine, frameWidth) + bottomRightCorner);
         Console.ResetColor();
     }
-
 
     private void SetColor(ConsoleColor color)
     {
