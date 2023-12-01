@@ -76,42 +76,8 @@ public class MarketService
         }
         string quantityInput = AskQuantity($"Wieviel von {selectedProduct.Name} verkaufen?");
         if (!ValidateQuantityToSell(middleman, quantityInput, selectedProduct, out int quantityToSell)) { return; }
-        _middlemanService.Sale(middleman, selectedProduct, quantityToSell);
+        _middlemanService.SellProduct(middleman, selectedProduct, quantityToSell);
         ConsoleUI.ShowMessage($"Sie haben {quantityToSell}x {selectedProduct.Name} verkauft.");
-    }
-
-    public void InitiatePurchase(Middleman middleman, string userInput)
-    {
-        if (!ValidateSelectedProduct(userInput, out Product? selectedProduct)) { return; }
-        if (selectedProduct == null)
-        {
-            ConsoleUI.ShowErrorLog("Es wurde kein Produkt ausgewählt.\n");
-            return;
-        }
-        string quantityInput = AskQuantity($"Wieviel von {selectedProduct.Name} kaufen?");
-        if (!ValidateQuantityToBuy(quantityInput, selectedProduct, out int quantityToBuy)) { return; }
-        _middlemanService.Purchase(middleman, selectedProduct, quantityToBuy, out string errorLog);
-        if (!string.IsNullOrEmpty(errorLog))
-        {
-            ConsoleUI.ShowErrorLog(errorLog + "\n");
-            return;
-        }
-        ConsoleUI.ShowMessage($"Sie haben {quantityToBuy}x {selectedProduct.Name} gekauft.");
-    }
-
-    private bool ValidateQuantityToBuy(string quantityToBuyInput, Product selectedProduct, out int quantityToBuy)
-    {
-        if (!int.TryParse(quantityToBuyInput, out quantityToBuy) || quantityToBuy <= 0)
-        {
-            ConsoleUI.ShowErrorLog("Ungültige Menge. Bitte erneut versuchen.\n");
-            return false;
-        }
-        if (quantityToBuy > selectedProduct.AvailableQuantity)
-        {
-            ConsoleUI.ShowErrorLog("Nicht genügend Produkte verfügbar. Bitte erneut versuchen.\n");
-            return false;
-        }
-        return true;
     }
 
     private bool ValidateQuantityToSell(Middleman middleman, string quantityToSellInput, Product selectedProduct, out int quantityToSell)

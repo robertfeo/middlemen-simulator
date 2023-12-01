@@ -1,8 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "AsQnmgw9BonTDJ82zrWmiV5k8yQu1KCAuDMcHOZVUa5kUQ09mDcN60QLF2/C68+ad4mt4KxkrA7g5mdLM7QSpw==",
+  "dgSpecHash": "irhCTleJEpbofmakZ6+R0KCdiiwHQGjhc90+Vc3mvJIWP3LGaK6yYbsJzaAX82f5o91hnv1DXqETJRCZ81zahQ==",
   "success": true,
-  "projectFilePath": "/workspaces/hse-dotnet-course/TheMiddleman/TheMiddleman.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "D:\\Wissen\\Hochschule\\Programming\\Repos\\middlemen-simulator\\TheMiddleman\\TheMiddleman.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\fesko\\.nuget\\packages\\microsoft.netcore.app.ref\\7.0.14\\microsoft.netcore.app.ref.7.0.14.nupkg.sha512",
+    "C:\\Users\\fesko\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\7.0.14\\microsoft.windowsdesktop.app.ref.7.0.14.nupkg.sha512",
+    "C:\\Users\\fesko\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\7.0.14\\microsoft.aspnetcore.app.ref.7.0.14.nupkg.sha512",
+    "C:\\Users\\fesko\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\7.0.14\\microsoft.netcore.app.host.win-x64.7.0.14.nupkg.sha512"
+  ],
   "logs": []
 }

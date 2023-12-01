@@ -83,8 +83,7 @@ public class ProductService
         }
         else
         {
-            ConsoleUI.ShowErrorLog("Produkt nicht gefunden!");
-            return null;
+            throw new ProductNotFoundException("Produkt nicht gefunden!");
         }
     }
 }

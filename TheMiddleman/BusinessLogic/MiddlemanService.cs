@@ -3,11 +3,11 @@ using TheMiddleman.Entity;
 
 public class MiddlemanService
 {
-    private readonly IMiddlemanRespository _middlemanRepository;
+    private readonly IMiddlemanRepository _middlemanRepository;
 
     public MiddlemanService()
     {
-        _middlemanRepository = new MiddlemanRespository();
+        _middlemanRepository = new MiddlemanRepository();
     }
 
     public Middleman CreateAndStoreMiddleman(string name, string company, int initialBalance)
@@ -17,7 +17,36 @@ public class MiddlemanService
         return middleman;
     }
 
-    public void Purchase(Middleman middleman, Product selectedProduct, int quantity, out string errorLog)
+    public void PurchaseProduct(Middleman middleman, Product selectedProduct, int quantity)
+    {
+        var totalCost = quantity * selectedProduct.BasePrice;
+        var totalQuantityAfterPurchase = middleman.Warehouse.Values.Sum() + quantity;
+        if (totalQuantityAfterPurchase > middleman.MaxStorageCapacity)
+        {
+            throw new WarehouseCapacityExceededException("Kein Platz mehr im Lager. Verfügbarer Platz: " + (middleman.MaxStorageCapacity - middleman.Warehouse.Values.Sum()) + " Einheiten.");
+        }
+        if (middleman.AccountBalance < totalCost)
+        {
+            throw new InsufficientFundsException("Nicht genügend Geld vorhanden. Verfügbares Guthaben: $" + middleman.AccountBalance);
+        }
+        selectedProduct.AvailableQuantity -= quantity;
+        middleman.AccountBalance -= totalCost;
+        UpdateWarehouse(middleman, selectedProduct, quantity);
+    }
+
+    private void UpdateWarehouse(Middleman middleman, Product product, int quantity)
+    {
+        if (middleman.Warehouse.ContainsKey(product))
+        {
+            middleman.Warehouse[product] += quantity;
+        }
+        else
+        {
+            middleman.Warehouse.Add(product, quantity);
+        }
+    }
+
+    /* public void Purchase(Middleman middleman, Product selectedProduct, int quantity, out string errorLog)
     {
         errorLog = "";
         var totalCost = quantity * selectedProduct.BasePrice;
@@ -42,7 +71,7 @@ public class MiddlemanService
         {
             middleman.Warehouse.Add(selectedProduct, quantity);
         }
-    }
+    } */
 
     public void SellProduct(Middleman middleman, Product product, int quantity)
     {
@@ -59,9 +88,8 @@ public class MiddlemanService
         int costForIncrease = increaseAmount * 50;
         if (middleman.AccountBalance < costForIncrease)
         {
-            throw new InsufficientFundsException($"Not enough funds for warehouse expansion. Available funds: ${middleman.AccountBalance}");
+            throw new InsufficientFundsException($"Nicht genügend Geld für die Erweiterung des Lagers vorhanden.");
         }
-
         middleman.AccountBalance -= costForIncrease;
         middleman.MaxStorageCapacity += increaseAmount;
     }

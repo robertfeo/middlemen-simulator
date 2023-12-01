@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/workspaces/hse-dotnet-course/TheMiddleman/TheMiddleman.csproj": {}
+    "D:\\Wissen\\Hochschule\\Programming\\Repos\\middlemen-simulator\\TheMiddleman\\TheMiddleman.csproj": {}
   },
   "projects": {
-    "/workspaces/hse-dotnet-course/TheMiddleman/TheMiddleman.csproj": {
+    "D:\\Wissen\\Hochschule\\Programming\\Repos\\middlemen-simulator\\TheMiddleman\\TheMiddleman.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/workspaces/hse-dotnet-course/TheMiddleman/TheMiddleman.csproj",
+        "projectUniqueName": "D:\\Wissen\\Hochschule\\Programming\\Repos\\middlemen-simulator\\TheMiddleman\\TheMiddleman.csproj",
         "projectName": "TheMiddleman",
-        "projectPath": "/workspaces/hse-dotnet-course/TheMiddleman/TheMiddleman.csproj",
-        "packagesPath": "/home/codespace/.nuget/packages/",
-        "outputPath": "/workspaces/hse-dotnet-course/TheMiddleman/obj/",
+        "projectPath": "D:\\Wissen\\Hochschule\\Programming\\Repos\\middlemen-simulator\\TheMiddleman\\TheMiddleman.csproj",
+        "packagesPath": "C:\\Users\\fesko\\.nuget\\packages\\",
+        "outputPath": "D:\\Wissen\\Hochschule\\Programming\\Repos\\middlemen-simulator\\TheMiddleman\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/codespace/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\fesko\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net7.0"
@@ -48,12 +48,30 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[7.0.14, 7.0.14]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[7.0.14, 7.0.14]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[7.0.14, 7.0.14]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[7.0.14, 7.0.14]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/dotnet/7.0.306/sdk/7.0.306/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.100\\RuntimeIdentifierGraph.json"
         }
       }
     }

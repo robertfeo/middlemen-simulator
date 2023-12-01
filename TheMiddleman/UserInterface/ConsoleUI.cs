@@ -235,8 +235,24 @@ public class ConsoleUI
         }
         else
         {
-            _marketService.InitiatePurchase(middleman, userInput);
+            InitiatePurchase(middleman, userInput);
         }
+    }
+
+    private void InitiatePurchase(Middleman middleman, string userInput)
+    {
+        try
+        {
+            Product selectedProduct = _marketService.ProductService().FindProductById(int.Parse(userInput))!;
+            int quantity = int.Parse(AskUserForInput("Wie viel von " + selectedProduct.Name + " möchten Sie kaufen?"));
+            _marketService.MiddlemanService().PurchaseProduct(middleman, selectedProduct, quantity);
+            ShowMessage($"Successfully purchased {quantity} units of {selectedProduct.Name}.");
+        }
+        catch (WarehouseCapacityExceededException ex) { ShowErrorLog(ex.Message); }
+        catch (InsufficientFundsException ex) { ShowErrorLog(ex.Message); }
+        catch (ProductNotFoundException ex) { ShowErrorLog(ex.Message); }
+        catch (FormatException) { ShowErrorLog("Ungueltige Eingabe."); }
+        catch (Exception ex) { ShowErrorLog("An unexpected error occurred: " + ex.Message); }
     }
 
     private void ShowSelling(Middleman middleman)
@@ -257,7 +273,7 @@ public class ConsoleUI
     {
         try
         {
-            ShowMessage("How many units do you want to expand the warehouse by? ($50 per unit)");
+            ShowMessage("Um wie viele Einheiten möchten Sie das Lager erweitern? (50 $ pro Einheit)");
             int increaseAmount = int.Parse(GetUserInput());
             _marketService.MiddlemanService().IncreaseWarehouseCapacity(middleman, increaseAmount);
         }
@@ -267,7 +283,7 @@ public class ConsoleUI
         }
         catch (FormatException)
         {
-            ShowErrorLog("Invalid input. Please enter a positive number.");
+            ShowErrorLog("Ungültige Eingabe. Bitte geben Sie eine positive Zahl ein.");
         }
     }
 
@@ -408,5 +424,11 @@ public class ConsoleUI
     public static String GetUserInput()
     {
         return Console.ReadLine() ?? "";
+    }
+
+    private string AskUserForInput(string prompt)
+    {
+        ConsoleUI.ShowMessage(prompt);
+        return ConsoleUI.GetUserInput() ?? "";
     }
 }

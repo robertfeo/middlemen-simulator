@@ -8,4 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = TheMiddleman
-build_property.ProjectDir = /workspaces/hse-dotnet-course/TheMiddleman/
+build_property.ProjectDir = D:\Wissen\Hochschule\Programming\Repos\middlemen-simulator\TheMiddleman\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
