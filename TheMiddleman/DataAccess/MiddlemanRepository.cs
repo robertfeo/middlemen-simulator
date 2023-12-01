@@ -2,7 +2,7 @@ using TheMiddleman.Entity;
 
 namespace TheMiddleman.DataAccess
 {
-    public class MiddlemanRespository : IMiddlemanRespository
+    public class MiddlemanRepository : IMiddlemanRepository
     {
         private List<Middleman> _middlemen = new List<Middleman>();
         private List<Middleman> _bankruptMiddlemen = new List<Middleman>();

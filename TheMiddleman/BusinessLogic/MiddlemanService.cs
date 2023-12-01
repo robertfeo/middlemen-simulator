@@ -44,7 +44,7 @@ public class MiddlemanService
         }
     }
 
-    public void Sale(Middleman middleman, Product product, int quantity)
+    public void SellProduct(Middleman middleman, Product product, int quantity)
     {
         middleman.Warehouse[product] -= quantity;
         if (middleman.Warehouse[product] == 0)
@@ -54,20 +54,14 @@ public class MiddlemanService
         middleman.AccountBalance += quantity * product.SellingPrice;
     }
 
-    public void IncreaseWarehouseCapacity(Middleman middleman)
+    public void IncreaseWarehouseCapacity(Middleman middleman, int increaseAmount)
     {
-        int increaseAmount;
-        if (!int.TryParse(ConsoleUI.GetUserInput(), out increaseAmount) || increaseAmount <= 0)
-        {
-            ConsoleUI.ShowErrorLog("Vergrößerung des Lagers abgebrochen.");
-            return;
-        }
         int costForIncrease = increaseAmount * 50;
         if (middleman.AccountBalance < costForIncrease)
         {
-            ConsoleUI.ShowErrorLog($"Nicht genug Geld für die Vergrößerung des Lagers vorhanden.\nVerfügbares Guthaben: ${middleman.AccountBalance}");
-            return;
+            throw new InsufficientFundsException($"Not enough funds for warehouse expansion. Available funds: ${middleman.AccountBalance}");
         }
+
         middleman.AccountBalance -= costForIncrease;
         middleman.MaxStorageCapacity += increaseAmount;
     }

@@ -2,7 +2,7 @@ using TheMiddleman.Entity;
 
 namespace TheMiddleman.DataAccess
 {
-    public interface IMiddlemanRespository
+    public interface IMiddlemanRepository
     {
         List<Middleman> RetrieveAllMiddlemen();
         List<Middleman> RetrieveBankruptMiddlemen();

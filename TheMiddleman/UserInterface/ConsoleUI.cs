@@ -255,18 +255,25 @@ public class ConsoleUI
 
     private void ShowWarehouseExpansion(Middleman middleman)
     {
-        ShowExtendingWarehouse(middleman);
+        try
+        {
+            ShowMessage("How many units do you want to expand the warehouse by? ($50 per unit)");
+            int increaseAmount = int.Parse(GetUserInput());
+            _marketService.MiddlemanService().IncreaseWarehouseCapacity(middleman, increaseAmount);
+        }
+        catch (InsufficientFundsException ex)
+        {
+            ShowErrorLog(ex.Message);
+        }
+        catch (FormatException)
+        {
+            ShowErrorLog("Invalid input. Please enter a positive number.");
+        }
     }
 
     private void NotifyInvalidMenuChoice()
     {
         ShowErrorLog("Ungültige Auswahl. Bitte erneut versuchen.");
-    }
-
-    private void ShowExtendingWarehouse(Middleman middleman)
-    {
-        ShowMessage("Um wie viel Einheiten möchten Sie das Lager vergrößern? ($50 pro Einheit)");
-        _marketService.MiddlemanService().IncreaseWarehouseCapacity(middleman);
     }
 
     private void ShowAllProducts()
