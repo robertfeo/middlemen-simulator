@@ -12,13 +12,11 @@ public class MarketService
     public int _currentDay = 1;
     private int _simulationDuration;
     private List<Middleman> _middlemen;
-    private List<Middleman> _bankruptMiddlemen;
 
     public MarketService()
     {
         _productService = new ProductService();
         _middlemanService = new MiddlemanService();
-        _bankruptMiddlemen = new List<Middleman>();
         _middlemen = new List<Middleman>();
     }
 
@@ -34,7 +32,7 @@ public class MarketService
 
     public void RunSimulation()
     {
-        _middlemen = _middlemanService.RetrieveAllMiddlemen();
+        _middlemen = _middlemanService.RetrieveMiddlemen();
         _productService.CreateProducts();
         _OnStartOfGame?.Invoke();
         for (_currentDay = 1; _currentDay <= _simulationDuration && _middlemen.Any(); _currentDay++)
@@ -52,77 +50,42 @@ public class MarketService
     public void SimulateDay()
     {
         if (_currentDay > 1) { _productService.UpdateProducts(); }
-        foreach (var middleman in _middlemen)
-        {
-            try
-            {
-                _middlemanService.DeductStorageCosts(middleman);
-            }
-            catch (InsufficientFundsException ex)
-            {
-                _OnBankruptcy?.Invoke(middleman, ex);
-                continue;
-            }
-            _OnDayStart.Invoke(middleman, _currentDay);
-        }
-        foreach (var bankruptMiddleman in _bankruptMiddlemen)
-        {
-            _middlemen.Remove(bankruptMiddleman);
-        }
+        List<Middleman> bankruptMiddlemen = ProcessMiddlemenEachDay();
+        SaveBankruptMiddlemen(bankruptMiddlemen);
         ChangeMiddlemanOrder();
         CheckForEndOfSimulation();
     }
 
-    public void InitiateSelling(Middleman middleman, string userInput)
+    private List<Middleman> ProcessMiddlemenEachDay()
     {
-        if (!ValidateSelectedProductForSelling(userInput, middleman, out Product? selectedProduct)) { return; }
-        if (selectedProduct == null)
+        List<Middleman> bankruptMiddlemen = new List<Middleman>();
+        foreach (var middleman in _middlemen)
         {
-            throw new UserInputException("Selected product is null.");
+            try
+            {
+                if (middleman.AccountBalance <= 0)
+                {
+                    throw new InsufficientFundsException("Nicht genügend Geld für die Lagerkosten vorhanden.");
+                }
+                _middlemanService.DeductStorageCosts(middleman);
+                _OnDayStart.Invoke(middleman, _currentDay);
+            }
+            catch (InsufficientFundsException ex)
+            {
+                _OnBankruptcy.Invoke(middleman, ex);
+                bankruptMiddlemen.Add(middleman);
+            }
         }
-        string quantityInput = AskQuantity($"Wieviel von {selectedProduct.Name} verkaufen?");
-        if (!ValidateQuantityToSell(middleman, quantityInput, selectedProduct, out int quantityToSell)) { return; }
-        _middlemanService.SellProduct(middleman, selectedProduct, quantityToSell);
+        return bankruptMiddlemen;
     }
 
-    private bool ValidateQuantityToSell(Middleman middleman, string quantityToSellInput, Product selectedProduct, out int quantityToSell)
+    private void SaveBankruptMiddlemen(List<Middleman> bankruptMiddlemen)
     {
-        if (!int.TryParse(quantityToSellInput, out quantityToSell) || quantityToSell <= 0)
+        foreach (var bankruptMiddleman in bankruptMiddlemen)
         {
-            throw new UserInputException("Ungültige Menge. Bitte erneut versuchen.");
+            _middlemanService.AddBankruptMiddleman(bankruptMiddleman);
+            _middlemen.Remove(bankruptMiddleman);
         }
-        var productInWarehouse = middleman.Warehouse.FirstOrDefault(p => p.Key.Id == selectedProduct.Id).Key;
-        if (productInWarehouse == null || quantityToSell > middleman.Warehouse[productInWarehouse])
-        {
-            throw new ProductNotAvailableException("Nicht genügend Produkte verfügbar. Bitte erneut versuchen.");
-        }
-        return true;
-    }
-
-    private bool ValidateSelectedProductForSelling(string userSelectedProductId, Middleman middleman, out Product? selectedProduct)
-    {
-        selectedProduct = null;
-        if (!int.TryParse(userSelectedProductId, out int selectedProductId) || selectedProductId <= 0)
-        {
-            throw new UserInputException("Ungültige Eingabe.");
-        }
-        int index = selectedProductId - 1;
-        if (index >= 0 && index < middleman.Warehouse.Count)
-        {
-            var entry = middleman.Warehouse.ElementAt(index);
-            selectedProduct = entry.Key;
-            return true;
-        }
-        else
-        {
-            throw new ProductNotAvailableException("Dieses Produkt ist nicht in Ihrem Inventar.");
-        }
-    }
-
-    private string AskQuantity(string prompt)
-    {
-        ConsoleUI.ShowMessage(prompt);
-        return ConsoleUI.GetUserInput() ?? "";
     }
 
     private void CheckForEndOfSimulation()

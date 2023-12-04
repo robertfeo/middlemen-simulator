@@ -48,6 +48,10 @@ public class MiddlemanService
 
     public void SellProduct(Middleman middleman, Product product, int quantity)
     {
+        if (!middleman.Warehouse.ContainsKey(product) || middleman.Warehouse[product] < quantity)
+        {
+            throw new ProductNotAvailableException("Nicht genügend Produkt zum Verkauf vorhanden.");
+        }
         middleman.Warehouse[product] -= quantity;
         if (middleman.Warehouse[product] == 0)
         {
@@ -78,15 +82,15 @@ public class MiddlemanService
     {
         var storageCosts = CalculateStorageCosts(middleman);
         middleman.AccountBalance -= storageCosts;
-        if (middleman.AccountBalance < 0)
+        if (middleman.AccountBalance <= 0)
         {
             throw new InsufficientFundsException("Nicht genügend Geld für die Lagerkosten vorhanden.");
         }
     }
 
-    public List<Middleman> RetrieveAllMiddlemen()
+    public List<Middleman> RetrieveMiddlemen()
     {
-        return _middlemanRepository.RetrieveAllMiddlemen();
+        return _middlemanRepository.RetrieveMiddlemen();
     }
 
     public List<Middleman> RetrieveBankruptMiddlemen()
@@ -97,5 +101,11 @@ public class MiddlemanService
     public List<Product> GetOwnedProducts(Middleman middleman)
     {
         return _middlemanRepository.GetOwnedProducts(middleman);
+    }
+
+    public void AddBankruptMiddleman(Middleman middleman)
+    {
+        _middlemanRepository.RetrieveMiddlemen().Remove(middleman);
+        _middlemanRepository.AddBankruptMiddleman(middleman);
     }
 }

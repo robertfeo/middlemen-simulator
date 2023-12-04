@@ -17,7 +17,12 @@ namespace TheMiddleman.DataAccess
             _middlemen.Add(middleman);
         }
 
-        public List<Middleman> RetrieveAllMiddlemen()
+        public void AddBankruptMiddleman(Middleman middleman)
+        {
+            _bankruptMiddlemen.Add(middleman);
+        }
+
+        public List<Middleman> RetrieveMiddlemen()
         {
             return _middlemen;
         }

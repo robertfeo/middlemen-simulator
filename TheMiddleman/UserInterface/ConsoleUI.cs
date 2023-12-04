@@ -276,6 +276,21 @@ public class ConsoleUI
         catch (Exception ex) { ShowErrorLog("Es ist ein unerwarteter Fehler aufgetreten: " + ex.Message); }
     }
 
+    private void InitiateSelling(Middleman middleman, string userInput)
+    {
+        try
+        {
+            Product selectedProduct = _marketService.MiddlemanService().GetOwnedProducts(middleman).FirstOrDefault(p => p.Id.ToString() == userInput)!;
+            string quantityInput = AskUserForInput($"Wie viele Einheiten von {selectedProduct.Name} möchten Sie verkaufen?");
+            int quantityToSell = int.Parse(quantityInput);
+            _marketService.MiddlemanService().SellProduct(middleman, selectedProduct, quantityToSell);
+            ShowMessage($"Erfolgreich {quantityToSell} Einheiten von {selectedProduct.Name} verkauft.");
+        }
+        catch (FormatException) { ShowErrorLog("Ungültige Eingabe."); }
+        catch (ProductNotAvailableException ex) { ShowErrorLog(ex.Message); }
+        catch (Exception ex) { ShowErrorLog("Ein Fehler ist aufgetreten: " + ex.Message); }
+    }
+
     private void ShowSelling(Middleman middleman)
     {
         ShowSellingMenu(middleman);
@@ -288,7 +303,7 @@ public class ConsoleUI
         {
             try
             {
-                _marketService.InitiateSelling(middleman, userChoice);
+                InitiateSelling(middleman, userChoice);
                 ShowMessage($"Verkauf erfolgreich.");
             }
             catch (UserInputException ex)
@@ -354,7 +369,6 @@ public class ConsoleUI
     {
         List<Product> products = _marketService.MiddlemanService().GetOwnedProducts(middleman);
         var (idWidth, nameWidth, quantityWidth, priceWidth) = CalculateSellingColumnWidths(products);
-        int totalWidth = idWidth + nameWidth + quantityWidth + priceWidth;
         SetColor(ConsoleColor.Yellow);
         ShowMessage("Produkte zum Verkauf:");
         SetColor(ConsoleColor.Green);
