@@ -63,6 +63,7 @@ public class MarketService
         {
             try
             {
+                _middlemanService.ResetDailyDataForMiddleman(middleman);
                 if (middleman.AccountBalance <= 0)
                 {
                     throw new InsufficientFundsException("Nicht genügend Geld für die Lagerkosten vorhanden.");

@@ -32,6 +32,7 @@ public class MiddlemanService
         selectedProduct.AvailableQuantity -= quantity;
         middleman.AccountBalance -= totalCost;
         UpdateWarehouse(middleman, selectedProduct, quantity);
+        middleman.DailyExpenses += totalCost;
     }
 
     private void UpdateWarehouse(Middleman middleman, Product product, int quantity)
@@ -58,6 +59,7 @@ public class MiddlemanService
             middleman.Warehouse.Remove(product);
         }
         middleman.AccountBalance += quantity * product.SellingPrice;
+        middleman.DailyEarnings += quantity * product.SellingPrice;
     }
 
     public void IncreaseWarehouseCapacity(Middleman middleman, int increaseAmount)
@@ -82,10 +84,19 @@ public class MiddlemanService
     {
         var storageCosts = CalculateStorageCosts(middleman);
         middleman.AccountBalance -= storageCosts;
+        middleman.DailyStorageCosts = storageCosts;
         if (middleman.AccountBalance <= 0)
         {
             throw new InsufficientFundsException("Nicht genügend Geld für die Lagerkosten vorhanden.");
         }
+    }
+
+    public void ResetDailyDataForMiddleman(Middleman middleman)
+    {
+        middleman.PreviousDayBalance = middleman.AccountBalance;
+        middleman.DailyExpenses = 0;
+        middleman.DailyEarnings = 0;
+        middleman.DailyStorageCosts = 0;
     }
 
     public List<Middleman> RetrieveMiddlemen()

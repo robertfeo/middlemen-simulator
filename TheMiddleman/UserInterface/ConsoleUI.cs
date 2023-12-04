@@ -4,6 +4,7 @@ using TheMiddleman.Entity;
 public class ConsoleUI
 {
     private readonly MarketService _marketService;
+    private bool _dailyReportShown = false;
 
     public ConsoleUI(MarketService marketService)
     {
@@ -201,8 +202,28 @@ public class ConsoleUI
         Console.ResetColor();
     }
 
+    private void ShowDailyReport(Middleman middleman)
+    {
+        Console.WriteLine("\nTagesbericht für " + middleman.Name);
+        Console.WriteLine("Kontostand zu Beginn des letzten Tages: $" + middleman.PreviousDayBalance);
+        Console.WriteLine("Ausgaben für Einkäufe: $" + middleman.DailyExpenses);
+        Console.WriteLine("Einnahmen aus Verkäufen: $" + middleman.DailyEarnings);
+        Console.WriteLine("Lagerkosten: $" + middleman.DailyStorageCosts);
+        Console.WriteLine("Aktueller Kontostand zu Beginn des Tages: $" + middleman.AccountBalance);
+        Console.WriteLine("\nDrücken Sie Enter, um fortzufahren...");
+        Console.ReadLine();
+        return;
+    }
+
     private void ShowMenuAndTakeAction(Middleman middleman, int currentDay)
     {
+        if (!_dailyReportShown)
+        {
+            ShowDailyReport(middleman);
+            _dailyReportShown = true;
+        }
+
+        /* ShowMenuAndTakeAction(middleman, currentDay); */
         bool endRound = false;
         while (!endRound)
         {
@@ -346,7 +367,7 @@ public class ConsoleUI
         }
     }
 
-    public void ShowShoppingMenu()
+    private void ShowShoppingMenu()
     {
         List<Product> products = _marketService.ProductService().GetAllProducts();
         var (idWidth, nameWidth, durabilityWidth, availableWidth, priceWidth) = CalculateColumnWidths(products);
@@ -397,19 +418,19 @@ public class ConsoleUI
         }
     }
 
-    public static void ShowErrorLog(string message)
+    private void ShowErrorLog(string message)
     {
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine("Fehler: " + message);
         Console.ResetColor();
     }
 
-    public static void ShowMessage(string message)
+    private void ShowMessage(string message)
     {
         Console.WriteLine(message);
     }
 
-    public static void PrintMessageInFrame(ConsoleColor color, string message)
+    private void PrintMessageInFrame(ConsoleColor color, string message)
     {
         int messageLength = message.Length + 2; // Add padding for the message
         char horizontalLine = '\u2550';     // '═' Double horizontal
@@ -441,8 +462,9 @@ public class ConsoleUI
             $"{("$" + product.PurchasePrice.ToString() + "/Stück").PadRight(priceWidth)}");
     }
 
-    public static void ShowCurrentDay(int currentDay)
+    private void ShowCurrentDay(int currentDay)
     {
+        _dailyReportShown = false;
         string dayText = $"Tag {currentDay}";
         int padding = 4;
         int frameWidth = dayText.Length + (padding * 2);
@@ -464,14 +486,14 @@ public class ConsoleUI
         Console.ForegroundColor = color;
     }
 
-    public static String GetUserInput()
+    private String GetUserInput()
     {
         return Console.ReadLine() ?? "";
     }
 
     private string AskUserForInput(string prompt)
     {
-        ConsoleUI.ShowMessage(prompt);
-        return ConsoleUI.GetUserInput() ?? "";
+        ShowMessage(prompt);
+        return GetUserInput() ?? "";
     }
 }

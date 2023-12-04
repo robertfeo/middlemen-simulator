@@ -10,6 +10,10 @@ namespace TheMiddleman.Entity
         public int AccountBalance { get; set; }
         public int MaxStorageCapacity { get; set; } = 100;
         public Dictionary<Product, int> Warehouse { get; set; } = new Dictionary<Product, int>();
+        public int PreviousDayBalance { get; set; }
+        public int DailyExpenses { get; set; }
+        public int DailyEarnings { get; set; }
+        public int DailyStorageCosts { get; set; }
 
         public Middleman(string name, string company, int accountBalance)
         {
