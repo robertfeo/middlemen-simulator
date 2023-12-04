@@ -6,12 +6,13 @@ public class MarketService
     private readonly MiddlemanService _middlemanService;
     public Action<Middleman, int> _OnDayStart { get; set; } = delegate { };
     public Action<int> _OnDayChange { get; set; } = delegate { };
-    public Action<Middleman, InsufficientFundsException> _OnBankruptcy { get; set; } = delegate { };
+    public Action<Middleman> _OnBankruptcy { get; set; } = delegate { };
     public Action<List<Middleman>> _OnEndOfGame { get; set; } = delegate { };
     public Action _OnStartOfGame { get; set; } = delegate { };
     public int _currentDay = 1;
     private int _simulationDuration;
     private List<Middleman> _middlemen;
+    private List<Middleman> _bankruptMiddlemen;
 
     public MarketService()
     {
@@ -33,69 +34,84 @@ public class MarketService
     public void RunSimulation()
     {
         _middlemen = _middlemanService.RetrieveMiddlemen();
+        _bankruptMiddlemen = _middlemanService.RetrieveBankruptMiddlemen();
         _productService.CreateProducts();
         _OnStartOfGame?.Invoke();
-        for (_currentDay = 1; _currentDay <= _simulationDuration && _middlemen.Any(); _currentDay++)
+        while (_currentDay <= _simulationDuration && _middlemen.Count > 0)
         {
             _OnDayChange?.Invoke(_currentDay);
             SimulateDay();
-            if (_middlemen.Count == 0)
-            {
-                break;
-            }
+            _currentDay++;
         }
-        EndSimulation();
     }
 
     public void SimulateDay()
     {
+        /* CheckForEndOfSimulation(); */
         if (_currentDay > 1) { _productService.UpdateProducts(); }
-        List<Middleman> bankruptMiddlemen = ProcessMiddlemenEachDay();
-        SaveBankruptMiddlemen(bankruptMiddlemen);
-        ChangeMiddlemanOrder();
-        CheckForEndOfSimulation();
+        ProcessMiddlemenEachDay();
     }
 
-    private List<Middleman> ProcessMiddlemenEachDay()
+    private void ProcessMiddlemenEachDay()
     {
-        List<Middleman> bankruptMiddlemen = new List<Middleman>();
-        foreach (var middleman in _middlemen)
+        foreach (var middleman in _middlemen.ToList())
         {
-            try
+            if (middleman.AccountBalance <= 0)
             {
-                /* _middlemanService.ResetDailyReport(middleman); */
-                _middlemanService.DeductStorageCosts(middleman);
-                _OnDayStart.Invoke(middleman, _currentDay);
+                _bankruptMiddlemen.Add(middleman);
+                continue;
             }
-            catch (InsufficientFundsException ex)
+            else
             {
-                _OnBankruptcy.Invoke(middleman, ex);
-                bankruptMiddlemen.Add(middleman);
+                try
+                {
+                    _middlemanService.DeductStorageCosts(middleman);
+                    if (middleman.AccountBalance <= 0)
+                    {
+                        _OnBankruptcy.Invoke(middleman);
+                        _bankruptMiddlemen.Add(middleman);
+                        continue;
+                    }
+                    _OnDayStart.Invoke(middleman, _currentDay);
+                }
+                catch (InsufficientFundsException)
+                {
+                    _bankruptMiddlemen.Add(middleman);
+                }
+                foreach (var bankruptMiddleman in _bankruptMiddlemen)
+                {
+                    _middlemen.Remove(bankruptMiddleman);
+                }
             }
         }
-        return bankruptMiddlemen;
+        SaveBankruptMiddlemen(_bankruptMiddlemen);
+        ChangeMiddlemanOrder();
+        CheckForEndOfSimulation();
     }
 
     private void SaveBankruptMiddlemen(List<Middleman> bankruptMiddlemen)
     {
         foreach (var bankruptMiddleman in bankruptMiddlemen)
         {
-            _middlemanService.AddBankruptMiddleman(bankruptMiddleman);
+            if (!bankruptMiddleman.BankruptcyNotified)
+            {
+                bankruptMiddleman.BankruptcyNotified = true;
+            }
             _middlemen.Remove(bankruptMiddleman);
         }
     }
 
     private void CheckForEndOfSimulation()
     {
-        if (_currentDay > _simulationDuration || _middlemen.Count == 0) { EndSimulation(); }
+        if (_currentDay >= _simulationDuration || !_middlemen.Any(m => m.AccountBalance >= 0))
+        {
+            EndSimulation();
+        }
     }
 
     private void EndSimulation()
     {
-        if (_middlemen.Count > 0)
-        {
-            _middlemen.Sort((x, y) => y.AccountBalance.CompareTo(x.AccountBalance));
-        }
+        _middlemen.Sort((x, y) => y.AccountBalance.CompareTo(x.AccountBalance));
         _OnEndOfGame.Invoke(_middlemen);
     }
 
@@ -109,21 +125,13 @@ public class MarketService
         }
     }
 
-    public bool CheckIfMiddlemanIsLastBankroped(Middleman middleman)
-    {
-        if (_currentDay > _simulationDuration || _middlemen.Count == 0)
-        {
-            EndSimulation();
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
     public void SetSimulationDuration(int duration)
     {
         _simulationDuration = duration;
+    }
+
+    public bool CheckIfMiddlemanIsLastBankrupted(Middleman middleman)
+    {
+        return _middlemanService.CheckIfMiddlemanIsLastBankrupted(middleman);
     }
 }

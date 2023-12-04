@@ -34,7 +34,7 @@ public class ProductService
         {
             double maxAvailability = product.MaxProductionRate * product.Durability;
             double availabilityPercentage = product.AvailableQuantity / maxAvailability;
-            product.PurchasePrice = (int)CalculateNewProductPrice(product, availabilityPercentage);
+            product.PurchasePrice = CalculateNewProductPrice(product, availabilityPercentage);
         }
     }
 
@@ -76,7 +76,7 @@ public class ProductService
     public Product? FindProductById(int productId)
     {
         var _products = _productRepository.GetAllProducts();
-        if(_products.Any(p => p.Id == productId))
+        if (_products.Any(p => p.Id == productId))
         {
             return _products.First(p => p.Id == productId);
         }

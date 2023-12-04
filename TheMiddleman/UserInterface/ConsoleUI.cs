@@ -26,14 +26,14 @@ public class ConsoleUI
         try
         {
             AnsiConsole.Write(new FigletText("The Middleman").LeftJustified().Color(Color.Red));
-            var rule = new Rule("[lime]Drücken Sie eine beliebige Taste, um fortzufahre...[/]");
+            var rule = new Rule("[lime]Drücken Sie eine beliebige Taste, um fortzufahren...[/]");
             rule.LeftJustified();
             AnsiConsole.Write(rule);
         }
         catch (Exception)
         {
             Console.WriteLine("Willkommen bei The Middleman!");
-            Console.WriteLine("Drücken Sie eine beliebige Taste, um fortzufahre...");
+            Console.WriteLine("Drücken Sie eine beliebige Taste, um fortzufahren...");
         }
         Console.ReadKey();
         BindFunctionsFromOutsideClass();
@@ -53,7 +53,7 @@ public class ConsoleUI
         int nameWidth = products.Max(p => p.Name.Length) + 4;
         int durabilityWidth = products.Max(p => $"{p.Durability} Tage".Length) + 4;
         int availableWidth = products.Max(p => $"Verfügbar: {p.AvailableQuantity}".Length) + 4;
-        int priceWidth = products.Max(p => $"${p.PurchasePrice}/Stück".Length) + 4;
+        int priceWidth = products.Max(p => $"{CurrencyFormatter.FormatPrice(p.PurchasePrice)} / Stück".Length) + 4;
         return (idWidth, nameWidth, durabilityWidth, availableWidth, priceWidth);
     }
 
@@ -62,35 +62,31 @@ public class ConsoleUI
         int idWidth = products.Max(p => p.Id.ToString().Length) + 4;
         int nameWidth = products.Max(p => p.Name.Length) + 4;
         int quantityWidth = "Menge".Length + 4;
-        int priceWidth = products.Max(p => $"${p.SellingPrice}/Stück".Length) + 4;
+        int priceWidth = products.Max(p => $"{p.SellingPrice}/Stück".Length) + 4;
         return (idWidth, nameWidth, quantityWidth, priceWidth);
     }
 
     private void ShowEndOfGame(List<Middleman> middlemen)
     {
-        string message;
         if (middlemen.Count == 0)
         {
-            message = "Simulation beendet. Alle Zwischenhändler sind bankrott gegangen";
-            PrintMessageInFrame(ConsoleColor.Magenta, message);
+            PrintMessageInFrame(ConsoleColor.Magenta, "Simulation beendet. Alle Zwischenhändler sind bankrott gegangen");
         }
         else
         {
-            message = "Simulation beendet. Hier ist die Rangliste:";
-            PrintMessageInFrame(ConsoleColor.Magenta, message);
+            PrintMessageInFrame(ConsoleColor.Magenta, "Simulation beendet. Hier ist die Rangliste:");
             int rank = 1;
             foreach (var middleman in middlemen)
             {
-                PrintMessageInFrame(ConsoleColor.Magenta, $"Platz {rank}: {middleman.Name} - Kontostand: ${middleman.AccountBalance}");
+                PrintMessageInFrame(ConsoleColor.Magenta, $"Platz {rank}: {middleman.Name} - Kontostand: ${CurrencyFormatter.FormatPrice(middleman.AccountBalance)}");
                 rank++;
             }
-            return;
         }
     }
 
-    private void ShowMiddlemanBankroped(Middleman middleman, Exception ex)
+    private void ShowMiddlemanBankroped(Middleman middleman)
     {
-        if (_marketService.CheckIfMiddlemanIsLastBankroped(middleman))
+        if (_marketService.CheckIfMiddlemanIsLastBankrupted(middleman))
         {
             return;
         }
@@ -188,7 +184,7 @@ public class ConsoleUI
         {
             string middlemanName = AskForMiddlemanName(id);
             string companyName = InquireCompany(middlemanName);
-            int initialBalance = DetermineInitialBalance();
+            double initialBalance = DetermineInitialBalance();
             _marketService.MiddlemanService().CreateAndStoreMiddleman(middlemanName, companyName, initialBalance);
         }
     }
@@ -209,7 +205,7 @@ public class ConsoleUI
         Console.ForegroundColor = ConsoleColor.Green;
         ShowMessage($"{verticalLine} {middleman.Name} von {middleman.Company}".PadRight(43) + verticalLine);
         Console.ResetColor();
-        ShowMessage($"{verticalLine} Kontostand: ${middleman.AccountBalance}".PadRight(43) + verticalLine);
+        ShowMessage($"{verticalLine} Kontostand: {CurrencyFormatter.FormatPrice(middleman.AccountBalance)}".PadRight(43) + verticalLine);
         ShowMessage($"{verticalLine} Lagerkapazität: {middleman.Warehouse.Values.Sum()}/{middleman.MaxStorageCapacity}".PadRight(43) + verticalLine);
         ShowMessage($"{verticalLine} Tag: {currentDay}".PadRight(43) + verticalLine);
         Console.ForegroundColor = ConsoleColor.Cyan;
@@ -217,59 +213,29 @@ public class ConsoleUI
         Console.ResetColor();
     }
 
-    /* private void ShowDailyReport(Middleman middleman)
-    {
-        if (_dailyReportShown)
-        {
-            return;
-        }
-        else
-        {
-            Console.WriteLine("\nTagesbericht für " + middleman.Name);
-            Console.WriteLine("Kontostand zu Beginn des letzten Tages: $" + middleman.PreviousDayBalance);
-            Console.WriteLine("Ausgaben für Einkäufe: $" + middleman.DailyExpenses);
-            Console.WriteLine("Einnahmen aus Verkäufen: $" + middleman.DailyEarnings);
-            Console.WriteLine("Lagerkosten: $" + middleman.DailyStorageCosts);
-            Console.WriteLine("Aktueller Kontostand zu Beginn des Tages: $" + middleman.AccountBalance);
-            Console.WriteLine("\nDrücken Sie Enter, um fortzufahren...");
-            Console.ReadLine();
-            _dailyReportShown = true;
-            return;
-        }
-    } */
-
     private void ShowDailyReport(Middleman middleman)
     {
-        if (_dailyReportShown)
-        {
-            return;
-        }
+        if (_dailyReportShown) { return; }
         else
         {
             var table = new Table();
-
-            table.AddColumn(new TableColumn("Kategorie").Centered());
-            table.AddColumn(new TableColumn("Betrag").Centered());
-
-            table.AddRow("Kontostand zu Beginn des letzten Tages", $"${middleman.PreviousDayBalance}");
-            table.AddRow("Ausgaben für Einkäufe", $"${middleman.DailyExpenses}");
-            table.AddRow("Einnahmen aus Verkäufen", $"${middleman.DailyEarnings}");
-            table.AddRow("Lagerkosten", $"${middleman.DailyStorageCosts}");
-            table.AddRow("Aktueller Kontostand zu Beginn des Tages", $"${middleman.AccountBalance}");
-
+            table.AddColumn(new TableColumn("Kategorie").LeftAligned());
+            table.AddColumn(new TableColumn("Betrag").LeftAligned());
+            table.AddRow("Kontostand zu Beginn des letzten Tages", $"{CurrencyFormatter.FormatPrice(middleman.PreviousDayBalance)}");
+            table.AddRow("Ausgaben für Einkäufe", $"{CurrencyFormatter.FormatPrice(middleman.DailyExpenses)}");
+            table.AddRow("Einnahmen aus Verkäufen", $"{CurrencyFormatter.FormatPrice(middleman.DailyEarnings)}");
+            table.AddRow("Lagerkosten", $"{CurrencyFormatter.FormatPrice(middleman.DailyStorageCosts)}");
+            table.AddRow("Aktueller Kontostand zu Beginn des Tages", $"{CurrencyFormatter.FormatPrice(middleman.AccountBalance)}");
             table.Border(TableBorder.Rounded);
             table.BorderColor(Color.Green);
             table.Title($"Tagesbericht für {middleman.Name}");
-
             AnsiConsole.Write(table);
-
             Console.WriteLine("\nDrücken Sie Enter, um fortzufahren...");
             Console.ReadLine();
             _dailyReportShown = true;
             return;
         }
     }
-
 
     private void ShowMenuAndTakeAction(Middleman middleman, int currentDay)
     {
@@ -320,7 +286,7 @@ public class ConsoleUI
 
     private void ShowShopping(Middleman middleman)
     {
-        ShowShoppingMenu();
+        ShowShoppingMenu(middleman);
         Console.WriteLine("z) Zurück");
         string userInput = GetUserInput();
         if (userInput == "z")
@@ -401,7 +367,7 @@ public class ConsoleUI
     {
         try
         {
-            ShowMessage("Um wie viele Einheiten möchten Sie das Lager erweitern? (50 $ pro Einheit)");
+            ShowMessage("Um wie viele Einheiten möchten Sie das Lager erweitern? (50 € pro Einheit)");
             int increaseAmount = int.Parse(GetUserInput());
             _marketService.MiddlemanService().IncreaseWarehouseCapacity(middleman, increaseAmount);
         }
@@ -420,94 +386,63 @@ public class ConsoleUI
         ShowErrorLog("Ungültige Auswahl. Bitte erneut versuchen.");
     }
 
-    private void ShowAllProducts()
+    private void ShowShoppingMenu(Middleman currentMiddleman)
     {
         List<Product> products = _marketService.ProductService().GetAllProducts();
-        var (idWidth, nameWidth, durabilityWidth, availableWidth, priceWidth) = CalculateColumnWidths(products);
-        foreach (Product product in products)
-        {
-            PrintProductLine(product, idWidth, nameWidth, durabilityWidth, availableWidth, priceWidth);
-        }
-    }
-
-    /* private void ShowShoppingMenu()
-    {
-        List<Product> products = _marketService.ProductService().GetAllProducts();
-        var (idWidth, nameWidth, durabilityWidth, availableWidth, priceWidth) = CalculateColumnWidths(products);
-        SetColor(ConsoleColor.Yellow);
-        ShowMessage("Verfügbare Produkte:");
-        SetColor(ConsoleColor.Green);
-        ShowMessage(
-        $"{"ID".PadRight(idWidth)} " +
-        $"{"Name".PadRight(nameWidth)} " +
-        $"{"Haltbarkeit".PadRight(durabilityWidth)} " +
-        $"{"Verfügbar".PadRight(availableWidth)} " +
-        $"{"Preis".PadRight(priceWidth)}"
-        );
-        SetColor(ConsoleColor.White);
-        ShowAllProducts();
-        Console.ResetColor();
-    } */
-
-    private void ShowShoppingMenu()
-    {
-        List<Product> products = _marketService.ProductService().GetAllProducts();
-        var (idWidth, nameWidth, durabilityWidth, availableWidth, priceWidth) = CalculateColumnWidths(products);
         var table = new Table();
         table.AddColumn(new TableColumn("[yellow]ID[/]").Centered());
         table.AddColumn(new TableColumn("[yellow]Name[/]").Centered());
         table.AddColumn(new TableColumn("[yellow]Haltbarkeit[/]").Centered());
         table.AddColumn(new TableColumn("[yellow]Verfügbar[/]").Centered());
         table.AddColumn(new TableColumn("[yellow]Preis[/]").Centered());
+        table.AddColumn(new TableColumn("[yellow]Rabatt[/]").Centered()); // Neue Spalte für Rabatte
         foreach (Product product in products)
         {
+            double discount = _marketService.MiddlemanService().CalculateDiscount(product, currentMiddleman);
+            string discountDisplay = discount > 0 ? $"{discount * 100}%" : "0%";
             table.AddRow(
-                product.Id.ToString().PadRight(idWidth),
-                product.Name.PadRight(nameWidth),
-                $"{product.Durability} Tage".PadRight(durabilityWidth),
-                $"Verfügbar: {product.AvailableQuantity}".PadRight(availableWidth),
-                $"${product.PurchasePrice}/Stück".PadRight(priceWidth)
+                product.Id.ToString(),
+                product.Name,
+                $"{product.Durability} Tage",
+                $"Verfügbar: {product.AvailableQuantity}",
+                $"{CurrencyFormatter.FormatPrice(product.PurchasePrice)} / Stück",
+                discountDisplay
             );
         }
         table.Border(TableBorder.Rounded);
         table.BorderColor(Color.Green);
         table.Title("[green]Verfügbare Produkte:[/]");
+        table.Collapse();
         AnsiConsole.Write(table);
-        Console.WriteLine("\nDrücken Sie eine beliebige Taste, um fortzufahren...");
-        Console.ReadKey();
     }
-
 
     private void ShowSellingMenu(Middleman middleman)
     {
         List<Product> products = _marketService.MiddlemanService().GetOwnedProducts(middleman);
-        var (idWidth, nameWidth, quantityWidth, priceWidth) = CalculateSellingColumnWidths(products);
-        SetColor(ConsoleColor.Yellow);
-        ShowMessage("Produkte zum Verkauf:");
-        SetColor(ConsoleColor.Green);
-        ShowMessage(
-            $"{"ID".PadRight(idWidth)}" +
-            $"{"Name".PadRight(nameWidth)}" +
-            $"{"Menge".PadRight(quantityWidth)}" +
-            $"{"Verkaufspreis".PadRight(priceWidth)}"
-        );
-        SetColor(ConsoleColor.White);
-        ShowOwnedProducts(middleman, idWidth, nameWidth, quantityWidth, priceWidth); // Show owned products with new method
-        Console.ResetColor();
-    }
-
-    private void ShowOwnedProducts(Middleman middleman, int idWidth, int nameWidth, int quantityWidth, int priceWidth)
-    {
         int index = 1;
+        var (idWidth, nameWidth, quantityWidth, priceWidth) = CalculateSellingColumnWidths(products);
+        var table = new Table();
+        table.AddColumn(new TableColumn("[yellow]ID[/]").Centered());
+        table.AddColumn(new TableColumn("[yellow]Name[/]").Centered());
+        table.AddColumn(new TableColumn("[yellow]Menge[/]").Centered());
+        table.AddColumn(new TableColumn("[yellow]Verkaufspreis[/]").Centered());
         foreach (var entry in middleman.Warehouse)
         {
-            string id = index.ToString().PadRight(idWidth);
-            string name = entry.Key.Name.PadRight(nameWidth);
-            string quantity = entry.Value.ToString().PadRight(quantityWidth);
-            string sellingPrice = $"${entry.Key.SellingPrice}/Stück".PadRight(priceWidth);
-            Console.WriteLine($"{id}{name}{quantity}{sellingPrice}");
+            Product product = entry.Key;
+            int quantity = entry.Value;
+            table.AddRow(
+                index.ToString().PadRight(idWidth),
+                product.Name.PadRight(nameWidth),
+                quantity.ToString().PadRight(quantityWidth),
+                $"{CurrencyFormatter.FormatPrice(product.SellingPrice)} / Stück".PadRight(priceWidth)
+            );
             index++;
         }
+        table.Border(TableBorder.Rounded);
+        table.BorderColor(Color.Green);
+        table.Title("[green]Produkte zum Verkauf:[/]");
+        table.Collapse();
+        AnsiConsole.Write(table);
     }
 
     private void ShowErrorLog(string message)
@@ -544,18 +479,12 @@ public class ConsoleUI
         Console.ResetColor();
     }
 
-    private void PrintProductLine(Product product, int idWidth, int nameWidth, int durabilityWidth, int availableWidth, int priceWidth)
-    {
-        Console.WriteLine(
-            $"{product.Id.ToString().PadRight(idWidth)} " +
-            $"{product.Name.PadRight(nameWidth)} " +
-            $"{($"{product.Durability} Tage").PadRight(durabilityWidth)} " +
-            $"{("Verfügbar: " + product.AvailableQuantity.ToString()).PadRight(availableWidth)} " +
-            $"{("$" + product.PurchasePrice.ToString() + "/Stück").PadRight(priceWidth)}");
-    }
-
     private void ShowCurrentDay(int currentDay)
     {
+        if (_marketService.MiddlemanService().RetrieveMiddlemen().Count == 0)
+        {
+            return;
+        }
         string dayText = $"Tag {currentDay}";
         int padding = 4;
         int frameWidth = dayText.Length + (padding * 2);
@@ -570,11 +499,6 @@ public class ConsoleUI
         Console.WriteLine(verticalLine + new string(' ', padding) + dayText + new string(' ', padding) + verticalLine);
         Console.WriteLine(bottomLeftCorner + new string(horizontalLine, frameWidth) + bottomRightCorner);
         Console.ResetColor();
-    }
-
-    private void SetColor(ConsoleColor color)
-    {
-        Console.ForegroundColor = color;
     }
 
     private String GetUserInput()

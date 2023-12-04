@@ -7,15 +7,16 @@ namespace TheMiddleman.Entity
         public int Id { get; set; }
         public string? Name { get; }
         public string? Company { get; }
-        public int AccountBalance { get; set; }
+        public double AccountBalance { get; set; }
         public int MaxStorageCapacity { get; set; } = 100;
         public Dictionary<Product, int> Warehouse { get; set; } = new Dictionary<Product, int>();
-        public int PreviousDayBalance { get; set; }
-        public int DailyExpenses { get; set; }
-        public int DailyEarnings { get; set; }
-        public int DailyStorageCosts { get; set; }
+        public double PreviousDayBalance { get; set; }
+        public double DailyExpenses { get; set; }
+        public double DailyEarnings { get; set; }
+        public double DailyStorageCosts { get; set; }
+        public bool BankruptcyNotified { get; set; } = false;
 
-        public Middleman(string name, string company, int accountBalance)
+        public Middleman(string name, string company, double accountBalance)
         {
             Name = name;
             Company = company;

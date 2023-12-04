@@ -10,7 +10,7 @@ public class MiddlemanService
         _middlemanRepository = new MiddlemanRepository();
     }
 
-    public Middleman CreateAndStoreMiddleman(string name, string company, int initialBalance)
+    public Middleman CreateAndStoreMiddleman(string name, string company, double initialBalance)
     {
         Middleman middleman = new Middleman(name, company, initialBalance);
         _middlemanRepository.AddMiddleman(middleman);
@@ -19,7 +19,9 @@ public class MiddlemanService
 
     public void PurchaseProduct(Middleman middleman, Product selectedProduct, int quantity)
     {
-        var totalCost = quantity * selectedProduct.BasePrice;
+        double discount = CalculateDiscount(selectedProduct, middleman);
+        double discountedPrice = selectedProduct.PurchasePrice * (1 - discount);
+        var totalCost = quantity * discountedPrice;
         var totalQuantityAfterPurchase = middleman.Warehouse.Values.Sum() + quantity;
         if (totalQuantityAfterPurchase > middleman.MaxStorageCapacity)
         {
@@ -27,7 +29,7 @@ public class MiddlemanService
         }
         if (middleman.AccountBalance < totalCost)
         {
-            throw new InsufficientFundsException("Nicht genügend Geld vorhanden. Verfügbares Guthaben: $" + middleman.AccountBalance);
+            throw new InsufficientFundsException("Nicht genügend Geld vorhanden. Verfügbares Guthaben: " + CurrencyFormatter.FormatPrice(middleman.AccountBalance));
         }
         selectedProduct.AvailableQuantity -= quantity;
         middleman.AccountBalance -= totalCost;
@@ -64,20 +66,29 @@ public class MiddlemanService
 
     public void IncreaseWarehouseCapacity(Middleman middleman, int increaseAmount)
     {
-        int costForIncrease = increaseAmount * 50;
+        double costForIncrease = increaseAmount * 50;
         if (middleman.AccountBalance < costForIncrease)
         {
-            throw new InsufficientFundsException($"Nicht genügend Geld für die Erweiterung des Lagers vorhanden.");
+            throw new InsufficientFundsException("Nicht genügend Geld für die Erweiterung des Lagers vorhanden.");
         }
         middleman.AccountBalance -= costForIncrease;
         middleman.MaxStorageCapacity += increaseAmount;
     }
 
-    public int CalculateStorageCosts(Middleman middleman)
+    public double CalculateStorageCosts(Middleman middleman)
     {
         var occupiedUnits = middleman.Warehouse.Values.Sum();
         var emptyUnits = middleman.MaxStorageCapacity - occupiedUnits;
         return occupiedUnits * 5 + emptyUnits * 1;
+    }
+
+    public double CalculateDiscount(Product product, Middleman middleman)
+    {
+        int quantity = middleman.Warehouse.ContainsKey(product) ? middleman.Warehouse[product] : 0;
+        if (quantity >= 75) return 0.10;
+        if (quantity >= 50) return 0.05;
+        if (quantity >= 25) return 0.02;
+        return 0;
     }
 
     public void DeductStorageCosts(Middleman middleman)
@@ -123,5 +134,15 @@ public class MiddlemanService
     {
         _middlemanRepository.RetrieveMiddlemen().Remove(middleman);
         _middlemanRepository.AddBankruptMiddleman(middleman);
+    }
+
+    public bool CheckIfMiddlemanIsLastBankrupted(Middleman middleman)
+    {
+        var middlemen = _middlemanRepository.RetrieveMiddlemen();
+        if (middlemen.Count > 0)
+        {
+            return middlemen[middlemen.Count - 1].Equals(middleman);
+        }
+        return false;
     }
 }

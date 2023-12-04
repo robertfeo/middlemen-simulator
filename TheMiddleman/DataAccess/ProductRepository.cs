@@ -102,7 +102,7 @@ namespace TheMiddleman.DataAccess
         {
             if (product != null)
             {
-                int basePrice = ReadProductBasePrice(line);
+                double basePrice = ReadProductBasePrice(line);
                 product.BasePrice = basePrice;
             }
         }
