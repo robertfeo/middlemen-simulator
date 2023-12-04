@@ -1,13 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "irhCTleJEpbofmakZ6+R0KCdiiwHQGjhc90+Vc3mvJIWP3LGaK6yYbsJzaAX82f5o91hnv1DXqETJRCZ81zahQ==",
+  "dgSpecHash": "0br1dDnCELY49P/v+wInXNrZ9cgQ4Rld6d+7US0ktzFb8yKmGJ0iSZvGO6yZ1EiO7BJjX+iyqkpOVCcIgOZnKA==",
   "success": true,
   "projectFilePath": "D:\\Wissen\\Hochschule\\Programming\\Repos\\middlemen-simulator\\TheMiddleman\\TheMiddleman.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\fesko\\.nuget\\packages\\microsoft.netcore.app.ref\\7.0.14\\microsoft.netcore.app.ref.7.0.14.nupkg.sha512",
-    "C:\\Users\\fesko\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\7.0.14\\microsoft.windowsdesktop.app.ref.7.0.14.nupkg.sha512",
-    "C:\\Users\\fesko\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\7.0.14\\microsoft.aspnetcore.app.ref.7.0.14.nupkg.sha512",
-    "C:\\Users\\fesko\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\7.0.14\\microsoft.netcore.app.host.win-x64.7.0.14.nupkg.sha512"
+    "C:\\Users\\fesko\\.nuget\\packages\\spectre.console\\0.48.0\\spectre.console.0.48.0.nupkg.sha512",
+    "C:\\Users\\fesko\\.nuget\\packages\\system.memory\\4.5.5\\system.memory.4.5.5.nupkg.sha512"
   ],
   "logs": []
 }

@@ -28,3 +28,6 @@ D:\Wissen\Hochschule\Programming\Repos\middlemen-simulator\TheMiddleman\bin\Debu
 D:\Wissen\Hochschule\Programming\Repos\middlemen-simulator\TheMiddleman\bin\Debug\net7.0\TheMiddleman.pdb
 D:\Wissen\Hochschule\Programming\Repos\middlemen-simulator\TheMiddleman\obj\Debug\net7.0\TheMiddleman.genruntimeconfig.cache
 D:\Wissen\Hochschule\Programming\Repos\middlemen-simulator\TheMiddleman\obj\Debug\net7.0\ref\TheMiddleman.dll
+D:\Wissen\Hochschule\Programming\Repos\middlemen-simulator\TheMiddleman\bin\Debug\net7.0\Spectre.Console.dll
+D:\Wissen\Hochschule\Programming\Repos\middlemen-simulator\TheMiddleman\obj\Debug\net7.0\TheMiddleman.csproj.AssemblyReference.cache
+D:\Wissen\Hochschule\Programming\Repos\middlemen-simulator\TheMiddleman\obj\Debug\net7.0\TheMiddleman.csproj.CopyComplete
