@@ -6,7 +6,7 @@ public class MarketService
     private readonly MiddlemanService _middlemanService;
     public Action<Middleman, int> _OnDayStart { get; set; } = delegate { };
     public Action<int> _OnDayChange { get; set; } = delegate { };
-    public Action<Middleman> _OnBankruptcy { get; set; } = delegate { };
+    public Action<Middleman, InsufficientFundsException> _OnBankruptcy { get; set; } = delegate { };
     public Action<List<Middleman>> _OnEndOfGame { get; set; } = delegate { };
     public Action _OnStartOfGame { get; set; } = delegate { };
     public int _currentDay = 1;
@@ -34,20 +34,19 @@ public class MarketService
 
     public void RunSimulation()
     {
-        if (_middlemanService == null || _productService == null)
-        {
-            throw new Exception("MiddlemanService oder ProductService ist null");
-        }
         _middlemen = _middlemanService.RetrieveAllMiddlemen();
-        _bankruptMiddlemen = _middlemanService.RetrieveBankruptMiddlemen();
         _productService.CreateProducts();
-        SetSimulationDuration(ConsoleUI.RequestSimulationDuration());
-        _OnStartOfGame.Invoke();
-        while (_currentDay <= _simulationDuration && _middlemen.Count > 0)
+        _OnStartOfGame?.Invoke();
+        for (_currentDay = 1; _currentDay <= _simulationDuration && _middlemen.Any(); _currentDay++)
         {
-            ConsoleUI.ShowCurrentDay(_currentDay);
+            _OnDayChange?.Invoke(_currentDay);
             SimulateDay();
+            if (_middlemen.Count == 0)
+            {
+                break;
+            }
         }
+        EndSimulation();
     }
 
     public void SimulateDay()
@@ -55,11 +54,13 @@ public class MarketService
         if (_currentDay > 1) { _productService.UpdateProducts(); }
         foreach (var middleman in _middlemen)
         {
-            _middlemanService.DeductStorageCosts(middleman);
-            if (middleman.AccountBalance < 0)
+            try
             {
-                _OnBankruptcy.Invoke(middleman);
-                _bankruptMiddlemen.Add(middleman);
+                _middlemanService.DeductStorageCosts(middleman);
+            }
+            catch (InsufficientFundsException ex)
+            {
+                _OnBankruptcy?.Invoke(middleman, ex);
                 continue;
             }
             _OnDayStart.Invoke(middleman, _currentDay);
@@ -69,7 +70,6 @@ public class MarketService
             _middlemen.Remove(bankruptMiddleman);
         }
         ChangeMiddlemanOrder();
-        _currentDay++;
         CheckForEndOfSimulation();
     }
 
@@ -78,27 +78,23 @@ public class MarketService
         if (!ValidateSelectedProductForSelling(userInput, middleman, out Product? selectedProduct)) { return; }
         if (selectedProduct == null)
         {
-            ConsoleUI.ShowErrorLog("Es wurde kein Produkt ausgewählt.\n");
-            return;
+            throw new UserInputException("Selected product is null.");
         }
         string quantityInput = AskQuantity($"Wieviel von {selectedProduct.Name} verkaufen?");
         if (!ValidateQuantityToSell(middleman, quantityInput, selectedProduct, out int quantityToSell)) { return; }
         _middlemanService.SellProduct(middleman, selectedProduct, quantityToSell);
-        ConsoleUI.ShowMessage($"Sie haben {quantityToSell}x {selectedProduct.Name} verkauft.");
     }
 
     private bool ValidateQuantityToSell(Middleman middleman, string quantityToSellInput, Product selectedProduct, out int quantityToSell)
     {
         if (!int.TryParse(quantityToSellInput, out quantityToSell) || quantityToSell <= 0)
         {
-            ConsoleUI.ShowErrorLog("Ungültige Menge. Bitte erneut versuchen.\n");
-            return false;
+            throw new UserInputException("Ungültige Menge. Bitte erneut versuchen.");
         }
         var productInWarehouse = middleman.Warehouse.FirstOrDefault(p => p.Key.Id == selectedProduct.Id).Key;
         if (productInWarehouse == null || quantityToSell > middleman.Warehouse[productInWarehouse])
         {
-            ConsoleUI.ShowErrorLog("Nicht genügend Produkte verfügbar. Bitte erneut versuchen.\n");
-            return false;
+            throw new ProductNotAvailableException("Nicht genügend Produkte verfügbar. Bitte erneut versuchen.");
         }
         return true;
     }
@@ -108,8 +104,7 @@ public class MarketService
         selectedProduct = null;
         if (!int.TryParse(userSelectedProductId, out int selectedProductId) || selectedProductId <= 0)
         {
-            ConsoleUI.ShowErrorLog("Ungültige Eingabe!");
-            return false;
+            throw new UserInputException("Ungültige Eingabe.");
         }
         int index = selectedProductId - 1;
         if (index >= 0 && index < middleman.Warehouse.Count)
@@ -120,8 +115,7 @@ public class MarketService
         }
         else
         {
-            ConsoleUI.ShowErrorLog("Dieses Produkt ist nicht in Ihrem Inventar.\n");
-            return false;
+            throw new ProductNotAvailableException("Dieses Produkt ist nicht in Ihrem Inventar.");
         }
     }
 
@@ -143,7 +137,6 @@ public class MarketService
             _middlemen.Sort((x, y) => y.AccountBalance.CompareTo(x.AccountBalance));
         }
         _OnEndOfGame.Invoke(_middlemen);
-        Environment.Exit(0);
     }
 
     private void ChangeMiddlemanOrder()
@@ -158,7 +151,15 @@ public class MarketService
 
     public bool CheckIfMiddlemanIsLastBankroped(Middleman middleman)
     {
-        return _middlemen.Count == 1 && _middlemen[0] == middleman;
+        if (_currentDay > _simulationDuration || _middlemen.Count == 0)
+        {
+            EndSimulation();
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public void SetSimulationDuration(int duration)

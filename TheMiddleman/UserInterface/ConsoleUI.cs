@@ -8,20 +8,27 @@ public class ConsoleUI
     public ConsoleUI(MarketService marketService)
     {
         _marketService = marketService;
-        InitializeConsoleUI(_marketService);
     }
 
-    private void InitializeConsoleUI(MarketService marketService)
+    public void StartSimulation()
+    {
+        InitializeConsoleUI();
+        RequestSimulationDuration();
+        ShowCreationMiddlemen();
+        _marketService.RunSimulation();
+    }
+
+    private void InitializeConsoleUI()
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
         Console.WriteLine("Willkommen bei The Middleman!");
         Console.WriteLine("Drücken Sie eine beliebige Taste, um das Spiel zu starten.");
         Console.ReadKey();
         Console.Clear();
-        marketService._OnDayStart += ShowMenuAndTakeAction;
-        marketService._OnBankruptcy += ShowMiddlemanBankroped;
-        marketService._OnEndOfGame += ShowEndOfGame;
-        marketService._OnStartOfGame += ShowCreationMiddlemen;
+        _marketService._OnDayStart += ShowMenuAndTakeAction;
+        _marketService._OnDayChange += ShowCurrentDay;
+        _marketService._OnBankruptcy += ShowMiddlemanBankroped;
+        _marketService._OnEndOfGame += ShowEndOfGame;
     }
 
     private (int idWidth, int nameWidth, int durabilityWidth, int availableWidth, int priceWidth) CalculateColumnWidths(List<Product> products)
@@ -65,7 +72,7 @@ public class ConsoleUI
         }
     }
 
-    private void ShowMiddlemanBankroped(Middleman middleman)
+    private void ShowMiddlemanBankroped(Middleman middleman, Exception ex)
     {
         if (_marketService.CheckIfMiddlemanIsLastBankroped(middleman))
         {
@@ -77,29 +84,34 @@ public class ConsoleUI
         }
     }
 
-    public static int RequestSimulationDuration()
+    private void RequestSimulationDuration()
     {
         Console.WriteLine("Wie lange soll die Simulation laufen? (Anzahl der Tage)");
         while (true)
         {
             if (int.TryParse(Console.ReadLine(), out int days) && days > 0)
             {
-                return days;
+                _marketService.SetSimulationDuration(days);
+                break;
             }
-            ShowErrorLog("Ungültige Eingabe. Bitte geben Sie eine positive Zahl ein.");
+            else
+            {
+                ShowErrorLog("Ungültige Eingabe. Bitte geben Sie eine positive Zahl ein.");
+            }
         }
     }
 
     private int RequestAmountOfMiddlemen()
     {
         Console.WriteLine("Wieviel Zwischenhändler nehmen teil?");
-        while (true)
+        if (int.TryParse(Console.ReadLine(), out int amount) && amount > 0)
         {
-            if (int.TryParse(Console.ReadLine(), out int amount) && amount > 0)
-            {
-                return amount;
-            }
+            return amount;
+        }
+        else
+        {
             ShowErrorLog("Ungültige Eingabe. Bitte geben Sie eine positive Zahl ein.");
+            return RequestAmountOfMiddlemen();
         }
     }
 
@@ -255,13 +267,13 @@ public class ConsoleUI
             Product selectedProduct = _marketService.ProductService().FindProductById(int.Parse(userInput))!;
             int quantity = int.Parse(AskUserForInput("Wie viel von " + selectedProduct.Name + " möchten Sie kaufen?"));
             _marketService.MiddlemanService().PurchaseProduct(middleman, selectedProduct, quantity);
-            ShowMessage($"Successfully purchased {quantity} units of {selectedProduct.Name}.");
+            ShowMessage($"Sie haben {quantity}x {selectedProduct.Name} gekauft.");
         }
         catch (WarehouseCapacityExceededException ex) { ShowErrorLog(ex.Message); }
         catch (InsufficientFundsException ex) { ShowErrorLog(ex.Message); }
         catch (ProductNotFoundException ex) { ShowErrorLog(ex.Message); }
         catch (FormatException) { ShowErrorLog("Ungueltige Eingabe."); }
-        catch (Exception ex) { ShowErrorLog("An unexpected error occurred: " + ex.Message); }
+        catch (Exception ex) { ShowErrorLog("Es ist ein unerwarteter Fehler aufgetreten: " + ex.Message); }
     }
 
     private void ShowSelling(Middleman middleman)
@@ -274,7 +286,15 @@ public class ConsoleUI
         }
         else
         {
-            _marketService.InitiateSelling(middleman, userChoice);
+            try
+            {
+                _marketService.InitiateSelling(middleman, userChoice);
+                ShowMessage($"Verkauf erfolgreich.");
+            }
+            catch (UserInputException ex)
+            {
+                ShowErrorLog(ex.Message);
+            }
         }
     }
 

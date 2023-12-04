@@ -78,6 +78,10 @@ public class MiddlemanService
     {
         var storageCosts = CalculateStorageCosts(middleman);
         middleman.AccountBalance -= storageCosts;
+        if (middleman.AccountBalance < 0)
+        {
+            throw new InsufficientFundsException("Nicht genügend Geld für die Lagerkosten vorhanden.");
+        }
     }
 
     public List<Middleman> RetrieveAllMiddlemen()

@@ -2,16 +2,15 @@ using System;
 
 public class Game
 {
-    private readonly MarketService marketService = null!;
+    private readonly ConsoleUI _consoleUI = null!;
 
     public Game()
     {
-        marketService = new MarketService();
+        _consoleUI = new ConsoleUI(new MarketService());
     }
 
     public void Run()
     {
-        new ConsoleUI(marketService);
-        marketService.RunSimulation();
+        _consoleUI.StartSimulation();
     }
 }
