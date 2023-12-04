@@ -7,7 +7,6 @@ public class ProductService
     public ProductService()
     {
         _productRepository = new ProductRepository();
-        _productRepository.CreateProducts();
     }
 
     public void UpdateProducts()
@@ -85,5 +84,10 @@ public class ProductService
         {
             throw new ProductNotFoundException("Produkt nicht gefunden!");
         }
+    }
+
+    public void CreateProducts()
+    {
+        _productRepository.CreateProducts();
     }
 }

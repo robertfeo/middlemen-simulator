@@ -18,8 +18,8 @@ public class MarketService
     {
         _productService = new ProductService();
         _middlemanService = new MiddlemanService();
-        _middlemen = _middlemanService.RetrieveAllMiddlemen();
-        _bankruptMiddlemen = _middlemanService.RetrieveBankruptMiddlemen();
+        _bankruptMiddlemen = new List<Middleman>();
+        _middlemen = new List<Middleman>();
     }
 
     public MiddlemanService MiddlemanService()
@@ -34,6 +34,13 @@ public class MarketService
 
     public void RunSimulation()
     {
+        if (_middlemanService == null || _productService == null)
+        {
+            throw new Exception("MiddlemanService oder ProductService ist null");
+        }
+        _middlemen = _middlemanService.RetrieveAllMiddlemen();
+        _bankruptMiddlemen = _middlemanService.RetrieveBankruptMiddlemen();
+        _productService.CreateProducts();
         SetSimulationDuration(ConsoleUI.RequestSimulationDuration());
         _OnStartOfGame.Invoke();
         while (_currentDay <= _simulationDuration && _middlemen.Count > 0)
@@ -91,23 +98,6 @@ public class MarketService
         if (productInWarehouse == null || quantityToSell > middleman.Warehouse[productInWarehouse])
         {
             ConsoleUI.ShowErrorLog("Nicht genügend Produkte verfügbar. Bitte erneut versuchen.\n");
-            return false;
-        }
-        return true;
-    }
-
-    private bool ValidateSelectedProduct(string userSelectedProductId, out Product? selectedProduct)
-    {
-        if (!int.TryParse(userSelectedProductId, out int selectedProductId) || selectedProductId <= 0)
-        {
-            ConsoleUI.ShowMessage("Ungültige Eingabe!");
-            selectedProduct = null;
-            return false;
-        }
-        selectedProduct = _productService.FindProductById(selectedProductId)!;
-        if (selectedProduct == null || selectedProduct.AvailableQuantity == 0)
-        {
-            ConsoleUI.ShowErrorLog("Dieses Produkt ist nicht mehr verfügbar. Bitte erneut versuchen.\n");
             return false;
         }
         return true;

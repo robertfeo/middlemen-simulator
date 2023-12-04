@@ -46,33 +46,6 @@ public class MiddlemanService
         }
     }
 
-    /* public void Purchase(Middleman middleman, Product selectedProduct, int quantity, out string errorLog)
-    {
-        errorLog = "";
-        var totalCost = quantity * selectedProduct.BasePrice;
-        var totalQuantityAfterPurchase = middleman.Warehouse.Values.Sum() + quantity;
-        if (totalQuantityAfterPurchase > middleman.MaxStorageCapacity)
-        {
-            errorLog = "Kein Platz mehr im Lager. Verfügbarer Platz: " + (middleman.MaxStorageCapacity - middleman.Warehouse.Values.Sum()) + " Einheiten.";
-            return;
-        }
-        if (middleman.AccountBalance < totalCost)
-        {
-            errorLog = "Nicht genügend Geld vorhanden. Verfügbares Guthaben: $" + middleman.AccountBalance;
-            return;
-        }
-        selectedProduct.AvailableQuantity -= quantity;
-        middleman.AccountBalance -= totalCost;
-        if (middleman.Warehouse.ContainsKey(selectedProduct))
-        {
-            middleman.Warehouse[selectedProduct] += quantity;
-        }
-        else
-        {
-            middleman.Warehouse.Add(selectedProduct, quantity);
-        }
-    } */
-
     public void SellProduct(Middleman middleman, Product product, int quantity)
     {
         middleman.Warehouse[product] -= quantity;

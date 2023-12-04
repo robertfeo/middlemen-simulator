@@ -7,11 +7,11 @@ public class Game
     public Game()
     {
         marketService = new MarketService();
-        new ConsoleUI(marketService);
     }
 
     public void Run()
     {
+        new ConsoleUI(marketService);
         marketService.RunSimulation();
     }
 }

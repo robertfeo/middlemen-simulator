@@ -8,11 +8,20 @@ public class ConsoleUI
     public ConsoleUI(MarketService marketService)
     {
         _marketService = marketService;
-        _marketService._OnDayStart += ShowMenuAndTakeAction;
-        _marketService._OnBankruptcy += ShowMiddlemanBankroped;
-        _marketService._OnEndOfGame += ShowEndOfGame;
-        _marketService._OnStartOfGame += ShowCreationMiddlemen;
+        InitializeConsoleUI(_marketService);
+    }
+
+    private void InitializeConsoleUI(MarketService marketService)
+    {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Console.WriteLine("Willkommen bei The Middleman!");
+        Console.WriteLine("Drücken Sie eine beliebige Taste, um das Spiel zu starten.");
+        Console.ReadKey();
+        Console.Clear();
+        marketService._OnDayStart += ShowMenuAndTakeAction;
+        marketService._OnBankruptcy += ShowMiddlemanBankroped;
+        marketService._OnEndOfGame += ShowEndOfGame;
+        marketService._OnStartOfGame += ShowCreationMiddlemen;
     }
 
     private (int idWidth, int nameWidth, int durabilityWidth, int availableWidth, int priceWidth) CalculateColumnWidths(List<Product> products)
