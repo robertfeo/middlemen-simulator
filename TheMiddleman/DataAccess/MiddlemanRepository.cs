@@ -36,5 +36,17 @@ namespace TheMiddleman.DataAccess
         {
             return middleman.Warehouse.Keys.ToList();
         }
+
+        public Product FindProductById(int productId)
+        {
+            try
+            {
+                return _middlemen.SelectMany(m => m.Warehouse.Keys).Single(p => p.Id == productId);
+            }
+            catch (InvalidOperationException)
+            {
+                throw new ProductNotFoundException($"Produkt mit der Id {productId} nicht gefunden.");
+            }
+        }
     }
 }

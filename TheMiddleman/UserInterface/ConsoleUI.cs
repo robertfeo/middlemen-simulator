@@ -204,26 +204,29 @@ public class ConsoleUI
 
     private void ShowDailyReport(Middleman middleman)
     {
-        Console.WriteLine("\nTagesbericht für " + middleman.Name);
-        Console.WriteLine("Kontostand zu Beginn des letzten Tages: $" + middleman.PreviousDayBalance);
-        Console.WriteLine("Ausgaben für Einkäufe: $" + middleman.DailyExpenses);
-        Console.WriteLine("Einnahmen aus Verkäufen: $" + middleman.DailyEarnings);
-        Console.WriteLine("Lagerkosten: $" + middleman.DailyStorageCosts);
-        Console.WriteLine("Aktueller Kontostand zu Beginn des Tages: $" + middleman.AccountBalance);
-        Console.WriteLine("\nDrücken Sie Enter, um fortzufahren...");
-        Console.ReadLine();
-        return;
+        if (_dailyReportShown)
+        {
+            return;
+        }
+        else
+        {
+            Console.WriteLine("\nTagesbericht für " + middleman.Name);
+            Console.WriteLine("Kontostand zu Beginn des letzten Tages: $" + middleman.PreviousDayBalance);
+            Console.WriteLine("Ausgaben für Einkäufe: $" + middleman.DailyExpenses);
+            Console.WriteLine("Einnahmen aus Verkäufen: $" + middleman.DailyEarnings);
+            Console.WriteLine("Lagerkosten: $" + middleman.DailyStorageCosts);
+            Console.WriteLine("Aktueller Kontostand zu Beginn des Tages: $" + middleman.AccountBalance);
+            Console.WriteLine("\nDrücken Sie Enter, um fortzufahren...");
+            Console.ReadLine();
+            _dailyReportShown = true;
+            return;
+        }
     }
 
     private void ShowMenuAndTakeAction(Middleman middleman, int currentDay)
     {
-        if (!_dailyReportShown)
-        {
-            ShowDailyReport(middleman);
-            _dailyReportShown = true;
-        }
-
-        /* ShowMenuAndTakeAction(middleman, currentDay); */
+        ShowDailyReport(middleman);
+        _marketService.MiddlemanService().ResetDailyReport(middleman);
         bool endRound = false;
         while (!endRound)
         {
@@ -237,6 +240,7 @@ public class ConsoleUI
             Console.ResetColor();
             ManageUserInteraction(Console.ReadLine()!, middleman, ref endRound);
         }
+        _dailyReportShown = false;
     }
 
     private void ManageUserInteraction(string userInput, Middleman middleman, ref bool endRound)
@@ -294,14 +298,26 @@ public class ConsoleUI
         catch (InsufficientFundsException ex) { ShowErrorLog(ex.Message); }
         catch (ProductNotFoundException ex) { ShowErrorLog(ex.Message); }
         catch (FormatException) { ShowErrorLog("Ungueltige Eingabe."); }
-        catch (Exception ex) { ShowErrorLog("Es ist ein unerwarteter Fehler aufgetreten: " + ex.Message); }
+        catch (Exception ex) { ShowErrorLog(ex.Message); }
     }
 
     private void InitiateSelling(Middleman middleman, string userInput)
     {
         try
         {
-            Product selectedProduct = _marketService.MiddlemanService().GetOwnedProducts(middleman).FirstOrDefault(p => p.Id.ToString() == userInput)!;
+            var ownedProducts = _marketService.MiddlemanService().GetOwnedProducts(middleman);
+            if (!int.TryParse(userInput, out int selectedProductId) || selectedProductId <= 0)
+            {
+                ShowErrorLog("Ungültige Eingabe!");
+                return;
+            }
+            int index = selectedProductId - 1;
+            Product selectedProduct = middleman.Warehouse.ElementAt(index).Key;
+            if (selectedProduct == null)
+            {
+                ShowErrorLog("Das ausgewählte Produkt existiert nicht im Lager.");
+                return;
+            }
             string quantityInput = AskUserForInput($"Wie viele Einheiten von {selectedProduct.Name} möchten Sie verkaufen?");
             int quantityToSell = int.Parse(quantityInput);
             _marketService.MiddlemanService().SellProduct(middleman, selectedProduct, quantityToSell);
@@ -309,7 +325,7 @@ public class ConsoleUI
         }
         catch (FormatException) { ShowErrorLog("Ungültige Eingabe."); }
         catch (ProductNotAvailableException ex) { ShowErrorLog(ex.Message); }
-        catch (Exception ex) { ShowErrorLog("Ein Fehler ist aufgetreten: " + ex.Message); }
+        catch (Exception ex) { ShowErrorLog(ex.Message); }
     }
 
     private void ShowSelling(Middleman middleman)
@@ -325,7 +341,6 @@ public class ConsoleUI
             try
             {
                 InitiateSelling(middleman, userChoice);
-                ShowMessage($"Verkauf erfolgreich.");
             }
             catch (UserInputException ex)
             {
@@ -464,7 +479,6 @@ public class ConsoleUI
 
     private void ShowCurrentDay(int currentDay)
     {
-        _dailyReportShown = false;
         string dayText = $"Tag {currentDay}";
         int padding = 4;
         int frameWidth = dayText.Length + (padding * 2);
