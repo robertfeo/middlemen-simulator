@@ -1,5 +1,3 @@
-using System;
-
 public class ProductNotAvailableException : Exception
 {
     public ProductNotAvailableException()

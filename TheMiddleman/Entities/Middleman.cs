@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace TheMiddleman.Entity
 {
     public class Middleman

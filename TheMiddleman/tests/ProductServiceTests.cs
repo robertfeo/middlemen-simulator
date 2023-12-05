@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using TheMiddleman.Entity;
 using TheMiddleman.DataAccess;
 using Moq;
 

@@ -1,5 +1,3 @@
-using System;
-
 public class UserInputException : Exception
 {
     public UserInputException()

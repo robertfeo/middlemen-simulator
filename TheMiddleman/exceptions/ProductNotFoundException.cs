@@ -1,5 +1,3 @@
-using System;
-
 public class ProductNotFoundException : Exception
 {
     public ProductNotFoundException()
