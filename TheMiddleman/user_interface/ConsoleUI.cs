@@ -14,7 +14,7 @@ public class ConsoleUI
     public void StartSimulation()
     {
         InitializeConsoleUI();
-        var rule = new Rule("[darkolivegreen2]Konfiguration der Simulation[/]");
+        var rule = new Rule("[darkolivegreen2]:gear:  Konfiguration der Simulation[/]");
         rule.LeftJustified();
         AnsiConsole.Write(rule);
         RequestSimulationDuration();
@@ -41,7 +41,7 @@ public class ConsoleUI
     {
         if (middlemen.Count == 0)
         {
-            ShowBankruptMiddlemen(middlemen);
+            ShowBankruptMiddlemen();
         }
         else
         {
@@ -49,9 +49,9 @@ public class ConsoleUI
         }
     }
 
-    private void ShowBankruptMiddlemen(List<Middleman> middlemen)
+    private void ShowBankruptMiddlemen()
     {
-        Panel panel = new Panel("[red]Alle Zwischenhändler sind bankrott gegangen[/]");
+        Panel panel = new Panel("[red]Alle Zwischenhändler sind bankrott gegangen.[/]");
         panel.Header("[yellow]Ende der Simulation[/]");
         AnsiConsole.Write(panel);
     }
@@ -67,6 +67,12 @@ public class ConsoleUI
         int rank = 1;
         foreach (Middleman middleman in middlemen)
         {
+            if (rank == 1)
+            {
+                table.AddRow($"[bold]{rank}:crown:[/]", $"[bold]{middleman.Name}[/]", $"[bold]{CurrencyFormatter.FormatPrice(middleman.AccountBalance)}[/]");
+                rank++;
+                continue;
+            }
             table.AddRow(rank.ToString(), middleman.Name!, CurrencyFormatter.FormatPrice(middleman.AccountBalance));
             rank++;
         }
@@ -78,9 +84,9 @@ public class ConsoleUI
 
     private void ShowMiddlemanBankroped(Middleman middleman)
     {
-        string message = $"[rapidblink][white]{middleman.Name} ist Bankrott gegangen und wird ausgeschlossen.[/][/]";
+        string message = $"[rapidblink][white]{middleman.Name} ist pleite und wird ausgeschlossen.[/][/]";
         Panel panel = new Panel(new Markup(message))
-            .Header("[indianred1]Information[/]");
+            .Header("[indianred1]:bell: Information[/]");
         AnsiConsole.Write(panel);
     }
 
@@ -167,7 +173,7 @@ public class ConsoleUI
             table.BorderColor(Color.Green);
             table.Title($"Tagesbericht für {middleman.Name}");
             AnsiConsole.Write(table);
-            Console.WriteLine("\nDrücken Sie Enter, um fortzufahren...");
+            Console.WriteLine("Drücken Sie Enter, um fortzufahren...");
             Console.ReadLine();
             _dailyReportShown = true;
             return;
@@ -286,7 +292,7 @@ public class ConsoleUI
             string quantityInput = AskUserForInput($"Wie viele Einheiten von {selectedProduct.Name} möchten Sie verkaufen?");
             int quantityToSell = int.Parse(quantityInput);
             _marketService.MiddlemanService().SellProduct(middleman, selectedProduct, quantityToSell);
-            ShowMessage($"Erfolgreich {quantityToSell} Einheiten von {selectedProduct.Name} verkauft.");
+            ShowMessage($"Erfolgreich {quantityToSell}x {selectedProduct.Name} verkauft.");
         }
         catch (FormatException) { ShowErrorLog("Ungültige Eingabe."); }
         catch (ProductNotAvailableException ex) { ShowErrorLog(ex.Message); }
@@ -443,6 +449,7 @@ public class ConsoleUI
         var rule = new Rule($"[lime]Tag {currentDay}[/]");
         rule.LeftJustified();
         AnsiConsole.Write(rule);
+        Console.WriteLine("\n");
     }
 
     private String GetUserInput()
