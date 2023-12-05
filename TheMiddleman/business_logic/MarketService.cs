@@ -56,12 +56,13 @@ public class MarketService
     {
         foreach (var middleman in _middlemen.ToList())
         {
-            if (middleman.AccountBalance <= 0)
+            /* if (middleman.AccountBalance <= 0)
             {
+                _OnBankruptcy.Invoke(middleman);
                 _bankruptMiddlemen.Add(middleman);
                 continue;
-            }
-            else
+            } */
+            /* else
             {
                 try
                 {
@@ -82,7 +83,26 @@ public class MarketService
                 {
                     _middlemen.Remove(bankruptMiddleman);
                 }
-            }
+            } */
+            try
+                {
+                    _middlemanService.DeductStorageCosts(middleman);
+                    if (middleman.AccountBalance <= 0)
+                    {
+                        _OnBankruptcy.Invoke(middleman);
+                        _bankruptMiddlemen.Add(middleman);
+                        continue;
+                    }
+                    _OnDayStart.Invoke(middleman, _currentDay);
+                }
+                catch (InsufficientFundsException)
+                {
+                    _bankruptMiddlemen.Add(middleman);
+                }
+                foreach (var bankruptMiddleman in _bankruptMiddlemen)
+                {
+                    _middlemen.Remove(bankruptMiddleman);
+                }
         }
         SaveBankruptMiddlemen(_bankruptMiddlemen);
         ChangeMiddlemanOrder();

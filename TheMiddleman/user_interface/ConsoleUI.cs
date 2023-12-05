@@ -68,20 +68,29 @@ public class ConsoleUI
 
     private void ShowEndOfGame(List<Middleman> middlemen)
     {
+        Panel? panel;
         if (middlemen.Count == 0)
         {
-            PrintMessageInFrame(ConsoleColor.Magenta, "Simulation beendet. Alle Zwischenhändler sind bankrott gegangen");
+            panel = new Panel("[red]Alle Zwischenhändler sind bankrott gegangen[/]");
+            panel.Header("[yellow]Ende der Simulation[/]");
         }
         else
         {
-            PrintMessageInFrame(ConsoleColor.Magenta, "Simulation beendet. Hier ist die Rangliste:");
+            panel = new Panel("[green]Folgende Zwischenhändler haben überlebt:[/]");
+            Table table = new Table().BorderColor(Color.Green);
+            table.AddColumn(new TableColumn("[u]Platz[/]"));
+            table.AddColumn(new TableColumn("[u]Name[/]"));
+            table.AddColumn(new TableColumn("[u]Kontostand[/]"));
             int rank = 1;
-            foreach (var middleman in middlemen)
+            foreach (Middleman middleman in middlemen)
             {
-                PrintMessageInFrame(ConsoleColor.Magenta, $"Platz {rank}: {middleman.Name} - Kontostand: {CurrencyFormatter.FormatPrice(middleman.AccountBalance)}");
+                table.AddRow(rank.ToString(), middleman.Name!, CurrencyFormatter.FormatPrice(middleman.AccountBalance));
                 rank++;
             }
+            panel = new Panel(table);
+            panel.Header("[yellow]Ende der Simulation[/]");
         }
+        AnsiConsole.Write(panel);
     }
 
     private void ShowMiddlemanBankroped(Middleman middleman)
@@ -98,83 +107,49 @@ public class ConsoleUI
 
     private void RequestSimulationDuration()
     {
-        Console.WriteLine("Wie lange soll die Simulation laufen? (Anzahl der Tage)");
-        while (true)
-        {
-            if (int.TryParse(Console.ReadLine(), out int days) && days > 0)
-            {
-                _marketService.SetSimulationDuration(days);
-                break;
-            }
-            else
-            {
-                ShowErrorLog("Ungültige Eingabe. Bitte geben Sie eine positive Zahl ein.");
-            }
-        }
+        var duration = AnsiConsole.Prompt(
+            new TextPrompt<int>("Wie lange soll die Simulation laufen? (Anzahl der Tage):")
+                .Validate(days => days > 0 ? ValidationResult.Success() : ValidationResult.Error("[red]Bitte geben Sie eine positive Zahl ein.[/]"))
+        );
+        _marketService.SetSimulationDuration(duration);
     }
 
     private int RequestAmountOfMiddlemen()
     {
-        Console.WriteLine("Wieviel Zwischenhändler nehmen teil?");
-        if (int.TryParse(Console.ReadLine(), out int amount) && amount > 0)
-        {
-            return amount;
-        }
-        else
-        {
-            ShowErrorLog("Ungültige Eingabe. Bitte geben Sie eine positive Zahl ein.");
-            return RequestAmountOfMiddlemen();
-        }
+        int amount = AnsiConsole.Prompt(
+            new TextPrompt<int>("Wieviel Zwischenhändler nehmen teil? (Anzahl):")
+                .Validate(numberMiddlemen => numberMiddlemen > 0 ? ValidationResult.Success() : ValidationResult.Error("[red]Ungültige Eingabe. Bitte geben Sie eine positive Zahl ein.[/]"))
+        );
+        return amount;
     }
 
     private string AskForMiddlemanName(int index)
     {
-        Console.WriteLine($"Name von Zwischenhändler {index}:");
-        string name;
-        while (true)
-        {
-            name = Console.ReadLine()!;
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                return name;
-            }
-            ShowErrorLog("Der Name darf nicht leer sein. Bitte erneut versuchen.");
-        }
+        return AnsiConsole.Ask<string>($"Name von Zwischenhändler {index}:");
     }
 
     private string InquireCompany(string name)
     {
-        Console.WriteLine($"Name der Firma von {name}:");
-        string companyName;
-        while (true)
-        {
-            companyName = Console.ReadLine()!;
-            if (!string.IsNullOrWhiteSpace(companyName))
-            {
-                return companyName;
-            }
-            ShowErrorLog("Der Name der Firma darf nicht leer sein. Bitte erneut versuchen.");
-        }
+        return AnsiConsole.Ask<string>($"Name der Firma von {name}:");
     }
 
     private int DetermineInitialBalance()
     {
-        ShowMessage("Schwierigkeitsgrad auswählen (Einfach, Normal, Schwer):");
-        while (true)
+        var balanceOptions = new Dictionary<string, int>
         {
-            switch (Console.ReadLine()?.ToLower() ?? "")
-            {
-                case "einfach":
-                    return 15000;
-                case "normal":
-                    return 10000;
-                case "schwer":
-                    return 7000;
-                default:
-                    ShowErrorLog("Ungültige Eingabe. Bitte 'Einfach', 'Normal' oder 'Schwer' eingeben.");
-                    break;
-            }
-        }
+            ["Einfach"] = 15000,
+            ["Normal"] = 10000,
+            ["Schwer"] = 7000
+        };
+
+        var difficulty = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Schwierigkeitsgrad auswählen:")
+                .PageSize(10)
+                .AddChoices(new[] { "Einfach", "Normal", "Schwer" })
+        );
+
+        return balanceOptions[difficulty];
     }
 
     private void ShowCreationMiddlemen()
@@ -184,12 +159,12 @@ public class ConsoleUI
         {
             string middlemanName = AskForMiddlemanName(id);
             string companyName = InquireCompany(middlemanName);
-            double initialBalance = DetermineInitialBalance();
+            int initialBalance = DetermineInitialBalance();
             _marketService.MiddlemanService().CreateAndStoreMiddleman(middlemanName, companyName, initialBalance);
         }
     }
 
-    private void DisplayMiddlemanInfo(Middleman middleman, int currentDay)
+    /* private void DisplayMiddlemanInfo(Middleman middleman, int currentDay)
     {
         char horizontalLine = '\u2550';     // '═' Double horizontal
         char verticalLine = '\u2551';       // '║' Double vertical
@@ -211,6 +186,20 @@ public class ConsoleUI
         Console.ForegroundColor = ConsoleColor.Cyan;
         ShowMessage(bottomBorder);
         Console.ResetColor();
+    } */
+
+    private void DisplayMiddlemanInfo(Middleman middleman, int currentDay)
+    {
+        var panel = new Panel(
+            new Markup(
+                $"[bold]Kontostand:[/] {CurrencyFormatter.FormatPrice(middleman.AccountBalance)}\n" +
+                $"[bold]Lagerkapazität:[/] {middleman.Warehouse.Values.Sum()}/{middleman.MaxStorageCapacity}\n" +
+                $"[bold]Tag:[/] {currentDay}"
+            ))
+            .Header($"{middleman.Name} von {middleman.Company}")
+            .Border(BoxBorder.Rounded)
+            .BorderStyle(new Style(Color.Cyan1));
+        AnsiConsole.Write(panel);
     }
 
     private void ShowDailyReport(Middleman middleman)
@@ -447,14 +436,12 @@ public class ConsoleUI
 
     private void ShowErrorLog(string message)
     {
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("Fehler: " + message);
-        Console.ResetColor();
+        AnsiConsole.MarkupLine($"[red]Fehler:[/] {message}");
     }
 
     private void ShowMessage(string message)
     {
-        Console.WriteLine(message);
+        AnsiConsole.WriteLine(message);
     }
 
     private void PrintMessageInFrame(ConsoleColor color, string message)
@@ -481,24 +468,9 @@ public class ConsoleUI
 
     private void ShowCurrentDay(int currentDay)
     {
-        if (_marketService.MiddlemanService().RetrieveMiddlemen().Count == 0)
-        {
-            return;
-        }
-        string dayText = $"Tag {currentDay}";
-        int padding = 4;
-        int frameWidth = dayText.Length + (padding * 2);
-        char horizontalLine = '\u2550';     // '═' Double horizontal
-        char verticalLine = '\u2551';       // '║' Double vertical
-        char topLeftCorner = '\u2554';      // '╔' Double down and right
-        char topRightCorner = '\u2557';     // '╗' Double down and left
-        char bottomLeftCorner = '\u255A';   // '╚' Double up and right
-        char bottomRightCorner = '\u255D';  // '╝' Double up and left
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(topLeftCorner + new string(horizontalLine, frameWidth) + topRightCorner);
-        Console.WriteLine(verticalLine + new string(' ', padding) + dayText + new string(' ', padding) + verticalLine);
-        Console.WriteLine(bottomLeftCorner + new string(horizontalLine, frameWidth) + bottomRightCorner);
-        Console.ResetColor();
+        var rule = new Rule($"[lime]Tag {currentDay}[/]");
+        rule.LeftJustified();
+        AnsiConsole.Write(rule);
     }
 
     private String GetUserInput()
