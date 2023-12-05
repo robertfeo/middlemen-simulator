@@ -22,15 +22,9 @@ public class MarketService
         _bankruptMiddlemen = new List<Middleman>();
     }
 
-    public MiddlemanService MiddlemanService()
-    {
-        return _middlemanService;
-    }
+    public MiddlemanService MiddlemanService() { return _middlemanService; }
 
-    public ProductService ProductService()
-    {
-        return _productService;
-    }
+    public ProductService ProductService() { return _productService; }
 
     public void RunSimulation()
     {
@@ -56,53 +50,22 @@ public class MarketService
     {
         foreach (var middleman in _middlemen.ToList())
         {
-            /* if (middleman.AccountBalance <= 0)
-            {
-                _OnBankruptcy.Invoke(middleman);
-                _bankruptMiddlemen.Add(middleman);
-                continue;
-            } */
-            /* else
-            {
-                try
-                {
-                    _middlemanService.DeductStorageCosts(middleman);
-                    if (middleman.AccountBalance <= 0)
-                    {
-                        _OnBankruptcy.Invoke(middleman);
-                        _bankruptMiddlemen.Add(middleman);
-                        continue;
-                    }
-                    _OnDayStart.Invoke(middleman, _currentDay);
-                }
-                catch (InsufficientFundsException)
-                {
-                    _bankruptMiddlemen.Add(middleman);
-                }
-                foreach (var bankruptMiddleman in _bankruptMiddlemen)
-                {
-                    _middlemen.Remove(bankruptMiddleman);
-                }
-            } */
             try
+            {
+                _middlemanService.DeductStorageCosts(middleman);
+                if (middleman.AccountBalance <= 0)
                 {
-                    _middlemanService.DeductStorageCosts(middleman);
-                    if (middleman.AccountBalance <= 0)
-                    {
-                        _OnBankruptcy.Invoke(middleman);
-                        _bankruptMiddlemen.Add(middleman);
-                        continue;
-                    }
-                    _OnDayStart.Invoke(middleman, _currentDay);
-                }
-                catch (InsufficientFundsException)
-                {
+                    _OnBankruptcy.Invoke(middleman);
                     _bankruptMiddlemen.Add(middleman);
+                    continue;
                 }
-                foreach (var bankruptMiddleman in _bankruptMiddlemen)
-                {
-                    _middlemen.Remove(bankruptMiddleman);
-                }
+                _OnDayStart.Invoke(middleman, _currentDay);
+            }
+            catch (InsufficientFundsException) { _bankruptMiddlemen.Add(middleman); }
+            foreach (var bankruptMiddleman in _bankruptMiddlemen)
+            {
+                _middlemen.Remove(bankruptMiddleman);
+            }
         }
         SaveBankruptMiddlemen(_bankruptMiddlemen);
         ChangeMiddlemanOrder();

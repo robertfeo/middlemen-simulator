@@ -47,16 +47,6 @@ public class ConsoleUI
         _marketService._OnEndOfGame += ShowEndOfGame;
     }
 
-    private (int idWidth, int nameWidth, int durabilityWidth, int availableWidth, int priceWidth) CalculateColumnWidths(List<Product> products)
-    {
-        int idWidth = products.Max(p => p.Id.ToString().Length) + 4;
-        int nameWidth = products.Max(p => p.Name.Length) + 4;
-        int durabilityWidth = products.Max(p => $"{p.Durability} Tage".Length) + 4;
-        int availableWidth = products.Max(p => $"Verfügbar: {p.AvailableQuantity}".Length) + 4;
-        int priceWidth = products.Max(p => $"{CurrencyFormatter.FormatPrice(p.PurchasePrice)} / Stück".Length) + 4;
-        return (idWidth, nameWidth, durabilityWidth, availableWidth, priceWidth);
-    }
-
     private (int idWidth, int nameWidth, int quantityWidth, int priceWidth) CalculateSellingColumnWidths(List<Product> products)
     {
         int idWidth = products.Max(p => p.Id.ToString().Length) + 4;
@@ -141,14 +131,12 @@ public class ConsoleUI
             ["Normal"] = 10000,
             ["Schwer"] = 7000
         };
-
         var difficulty = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .Title("Schwierigkeitsgrad auswählen:")
                 .PageSize(10)
                 .AddChoices(new[] { "Einfach", "Normal", "Schwer" })
         );
-
         return balanceOptions[difficulty];
     }
 
@@ -163,30 +151,6 @@ public class ConsoleUI
             _marketService.MiddlemanService().CreateAndStoreMiddleman(middlemanName, companyName, initialBalance);
         }
     }
-
-    /* private void DisplayMiddlemanInfo(Middleman middleman, int currentDay)
-    {
-        char horizontalLine = '\u2550';     // '═' Double horizontal
-        char verticalLine = '\u2551';       // '║' Double vertical
-        char topLeftCorner = '\u2554';      // '╔' Double down and right
-        char topRightCorner = '\u2557';     // '╗' Double down and left
-        char bottomLeftCorner = '\u255A';   // '╚' Double up and right
-        char bottomRightCorner = '\u255D';  // '╝' Double up and left
-        string topBorder = topLeftCorner + new string(horizontalLine, 42) + topRightCorner;
-        string bottomBorder = bottomLeftCorner + new string(horizontalLine, 42) + bottomRightCorner;
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        ShowMessage(topBorder);
-        Console.ResetColor();
-        Console.ForegroundColor = ConsoleColor.Green;
-        ShowMessage($"{verticalLine} {middleman.Name} von {middleman.Company}".PadRight(43) + verticalLine);
-        Console.ResetColor();
-        ShowMessage($"{verticalLine} Kontostand: {CurrencyFormatter.FormatPrice(middleman.AccountBalance)}".PadRight(43) + verticalLine);
-        ShowMessage($"{verticalLine} Lagerkapazität: {middleman.Warehouse.Values.Sum()}/{middleman.MaxStorageCapacity}".PadRight(43) + verticalLine);
-        ShowMessage($"{verticalLine} Tag: {currentDay}".PadRight(43) + verticalLine);
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        ShowMessage(bottomBorder);
-        Console.ResetColor();
-    } */
 
     private void DisplayMiddlemanInfo(Middleman middleman, int currentDay)
     {
@@ -314,8 +278,7 @@ public class ConsoleUI
                 ShowErrorLog("Ungültige Eingabe!");
                 return;
             }
-            int index = selectedProductId - 1;
-            Product selectedProduct = middleman.Warehouse.ElementAt(index).Key;
+            Product selectedProduct = middleman.Warehouse.ElementAt(selectedProductId - 1).Key;
             if (selectedProduct == null)
             {
                 ShowErrorLog("Das ausgewählte Produkt existiert nicht im Lager.");
@@ -379,12 +342,7 @@ public class ConsoleUI
     {
         List<Product> products = _marketService.ProductService().GetAllProducts();
         var table = new Table();
-        table.AddColumn(new TableColumn("[yellow]ID[/]").Centered());
-        table.AddColumn(new TableColumn("[yellow]Name[/]").Centered());
-        table.AddColumn(new TableColumn("[yellow]Haltbarkeit[/]").Centered());
-        table.AddColumn(new TableColumn("[yellow]Verfügbar[/]").Centered());
-        table.AddColumn(new TableColumn("[yellow]Preis[/]").Centered());
-        table.AddColumn(new TableColumn("[yellow]Rabatt[/]").Centered()); // Neue Spalte für Rabatte
+        GenerateProductsForPurchaseTable(ref table);
         foreach (Product product in products)
         {
             double discount = _marketService.MiddlemanService().CalculateDiscount(product, currentMiddleman);
@@ -405,16 +363,23 @@ public class ConsoleUI
         AnsiConsole.Write(table);
     }
 
+    private void GenerateProductsForPurchaseTable(ref Table table)
+    {
+        table.AddColumn(new TableColumn("[yellow]ID[/]").Centered());
+        table.AddColumn(new TableColumn("[yellow]Name[/]").Centered());
+        table.AddColumn(new TableColumn("[yellow]Haltbarkeit[/]").Centered());
+        table.AddColumn(new TableColumn("[yellow]Verfügbar[/]").Centered());
+        table.AddColumn(new TableColumn("[yellow]Preis[/]").Centered());
+        table.AddColumn(new TableColumn("[yellow]Rabatt[/]").Centered());
+    }
+
     private void ShowSellingMenu(Middleman middleman)
     {
         List<Product> products = _marketService.MiddlemanService().GetOwnedProducts(middleman);
         int index = 1;
         var (idWidth, nameWidth, quantityWidth, priceWidth) = CalculateSellingColumnWidths(products);
         var table = new Table();
-        table.AddColumn(new TableColumn("[yellow]ID[/]").Centered());
-        table.AddColumn(new TableColumn("[yellow]Name[/]").Centered());
-        table.AddColumn(new TableColumn("[yellow]Menge[/]").Centered());
-        table.AddColumn(new TableColumn("[yellow]Verkaufspreis[/]").Centered());
+        GenerateProductsForSaleTable(ref table);
         foreach (var entry in middleman.Warehouse)
         {
             Product product = entry.Key;
@@ -432,6 +397,14 @@ public class ConsoleUI
         table.Title("[green]Produkte zum Verkauf:[/]");
         table.Collapse();
         AnsiConsole.Write(table);
+    }
+
+    private void GenerateProductsForSaleTable(ref Table table)
+    {
+        table.AddColumn(new TableColumn("[yellow]ID[/]").Centered());
+        table.AddColumn(new TableColumn("[yellow]Name[/]").Centered());
+        table.AddColumn(new TableColumn("[yellow]Menge[/]").Centered());
+        table.AddColumn(new TableColumn("[yellow]Verkaufspreis[/]").Centered());
     }
 
     private void ShowErrorLog(string message)

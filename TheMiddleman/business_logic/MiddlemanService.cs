@@ -47,10 +47,7 @@ public class MiddlemanService
         {
             middleman.Warehouse[product] += quantity;
         }
-        else
-        {
-            middleman.Warehouse.Add(product, quantity);
-        }
+        else { middleman.Warehouse.Add(product, quantity); }
     }
 
     public void SellProduct(Middleman middleman, Product product, int quantity)
