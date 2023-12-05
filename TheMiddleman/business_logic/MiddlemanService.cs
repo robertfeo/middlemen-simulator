@@ -33,7 +33,7 @@ public class MiddlemanService
         }
         if (selectedProduct.AvailableQuantity < quantity)
         {
-            throw new ProductNotAvailableException("Nicht genügend Produkt verfügbar.");
+            throw new ProductNotAvailableException("Nicht genügend Produkte verfügbar.");
         }
         selectedProduct.AvailableQuantity -= quantity;
         middleman.AccountBalance -= totalCost;
@@ -54,7 +54,7 @@ public class MiddlemanService
     {
         if (!middleman.Warehouse.ContainsKey(product) || middleman.Warehouse[product] < quantity)
         {
-            throw new ProductNotAvailableException("Nicht genügend Produkt zum Verkauf vorhanden.");
+            throw new ProductNotAvailableException("Nicht genügend Produkte zum Verkauf vorhanden.");
         }
         middleman.Warehouse[product] -= quantity;
         if (middleman.Warehouse[product] == 0)
@@ -95,7 +95,7 @@ public class MiddlemanService
     public void DeductStorageCosts(Middleman middleman)
     {
         var storageCosts = CalculateStorageCosts(middleman);
-        if (middleman.AccountBalance <= 0)
+        if (middleman.AccountBalance - storageCosts <= 0)
         {
             throw new InsufficientFundsException("Nicht genügend Geld für die Lagerkosten vorhanden.");
         }
@@ -140,10 +140,25 @@ public class MiddlemanService
     public bool CheckIfMiddlemanIsLastBankrupted(Middleman middleman)
     {
         var middlemen = _middlemanRepository.RetrieveMiddlemen();
-        if (middlemen.Count > 0)
+        if (middlemen.Count > 0 && middlemen[middlemen.Count - 1].Equals(middleman))
         {
-            return middlemen[middlemen.Count - 1].Equals(middleman);
+            return true;
+        }else
+        {
+            return false;
         }
-        return false;
+    }
+
+    public bool IsBankrupted(Middleman middleman)
+    {
+        if (middleman.AccountBalance <= 0)
+        {
+            middleman.BankruptcyNotified = true;
+        }
+        else
+        {
+            middleman.BankruptcyNotified = false;
+        }
+        return middleman.BankruptcyNotified;
     }
 }

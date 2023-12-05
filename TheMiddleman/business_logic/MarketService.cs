@@ -43,10 +43,10 @@ public class MarketService
     public void SimulateDay()
     {
         if (_currentDay > 1) { _productService.UpdateProducts(); }
-        ProcessMiddlemenEachDay();
+        SimulateMiddlemenDay();
     }
 
-    private void ProcessMiddlemenEachDay()
+    private void SimulateMiddlemenDay()
     {
         foreach (var middleman in _middlemen.ToList())
         {
@@ -56,25 +56,25 @@ public class MarketService
                 if (middleman.AccountBalance <= 0)
                 {
                     _OnBankruptcy.Invoke(middleman);
-                    _bankruptMiddlemen.Add(middleman);
                     continue;
                 }
-                _OnDayStart.Invoke(middleman, _currentDay);
             }
-            catch (InsufficientFundsException) { _bankruptMiddlemen.Add(middleman); }
-            foreach (var bankruptMiddleman in _bankruptMiddlemen)
+            catch (InsufficientFundsException)
             {
-                _middlemen.Remove(bankruptMiddleman);
+                _OnBankruptcy.Invoke(middleman);
+                _bankruptMiddlemen.Add(middleman);
+                continue;
             }
+            _OnDayStart.Invoke(middleman, _currentDay);
         }
-        SaveBankruptMiddlemen(_bankruptMiddlemen);
+        SaveBankruptMiddlemen();
         ChangeMiddlemanOrder();
         CheckForEndOfSimulation();
     }
 
-    private void SaveBankruptMiddlemen(List<Middleman> bankruptMiddlemen)
+    private void SaveBankruptMiddlemen()
     {
-        foreach (var bankruptMiddleman in bankruptMiddlemen)
+        foreach (var bankruptMiddleman in _bankruptMiddlemen)
         {
             if (!bankruptMiddleman.BankruptcyNotified)
             {
