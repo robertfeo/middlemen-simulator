@@ -14,6 +14,9 @@ public class ConsoleUI
     public void StartSimulation()
     {
         InitializeConsoleUI();
+        var rule = new Rule("[darkolivegreen2]Konfiguration der Simulation[/]");
+        rule.LeftJustified();
+        AnsiConsole.Write(rule);
         RequestSimulationDuration();
         ShowCreationMiddlemen();
         _marketService.RunSimulation();
@@ -22,19 +25,7 @@ public class ConsoleUI
     private void InitializeConsoleUI()
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
-        try
-        {
-            AnsiConsole.Write(new FigletText("The Middleman").LeftJustified().Color(Color.Red));
-            var rule = new Rule("[lime]Drücken Sie eine beliebige Taste, um fortzufahren...[/]");
-            rule.LeftJustified();
-            AnsiConsole.Write(rule);
-        }
-        catch (Exception)
-        {
-            Console.WriteLine("Willkommen bei The Middleman!");
-            Console.WriteLine("Drücken Sie eine beliebige Taste, um fortzufahren...");
-        }
-        Console.ReadKey();
+        AnsiConsole.Write(new FigletText("The Middleman").LeftJustified().Color(Color.Red));
         BindFunctionsFromOutsideClass();
     }
 
@@ -87,11 +78,10 @@ public class ConsoleUI
 
     private void ShowMiddlemanBankroped(Middleman middleman)
     {
-        if (_marketService.MiddlemanService().CheckIfMiddlemanIsLastBankrupted(middleman))
-        {
-            return;
-        }
-        PrintMessageInFrame(ConsoleColor.Magenta, $"{middleman.Name} ist Bankrott gegangen und wird ausgeschlossen.");
+        string message = $"[rapidblink][white]{middleman.Name} ist Bankrott gegangen und wird ausgeschlossen.[/][/]";
+        Panel panel = new Panel(new Markup(message))
+            .Header("[indianred1]Information[/]");
+        AnsiConsole.Write(panel);
     }
 
     private void RequestSimulationDuration()
