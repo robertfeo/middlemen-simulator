@@ -47,7 +47,6 @@ public class MarketService
 
     public void SimulateDay()
     {
-        /* CheckForEndOfSimulation(); */
         if (_currentDay > 1) { _productService.UpdateProducts(); }
         ProcessMiddlemenEachDay();
     }
