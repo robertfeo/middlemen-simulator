@@ -37,15 +37,26 @@ namespace TheMiddleman.DataAccess
             return middleman.Warehouse.Keys.ToList();
         }
 
-        public Product FindProductById(int productId)
+        public Product GetProductByID(int id)
         {
-            try
+            if (id < 0)
             {
-                return _middlemen.SelectMany(m => m.Warehouse.Keys).Single(p => p.Id == productId);
+                throw new ProductNotFoundException($"Produkt mit der Id {id} nicht gefunden.");
             }
-            catch (InvalidOperationException)
+            if (_middlemen.Select(m => m.Warehouse.ElementAt(id - 1).Key).Any())
             {
-                throw new ProductNotFoundException($"Produkt mit der Id {productId} nicht gefunden.");
+                try
+                {
+                    return _middlemen.Select(m => m.Warehouse.ElementAt(id - 1).Key).Single();
+                }
+                catch (InvalidOperationException)
+                {
+                    throw new ProductNotFoundException($"Produkt mit der Id {id} nicht gefunden.");
+                }
+            }
+            else
+            {
+                throw new ArgumentNullException($"Produkt mit der Id {id} nicht gefunden.");
             }
         }
     }

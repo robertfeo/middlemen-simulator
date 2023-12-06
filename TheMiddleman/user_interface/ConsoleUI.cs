@@ -1,5 +1,6 @@
 using TheMiddleman.Entity;
 using Spectre.Console;
+using System.Numerics;
 
 public class ConsoleUI
 {
@@ -58,12 +59,7 @@ public class ConsoleUI
 
     private void ShowRankingMiddlemen(List<Middleman> middlemen)
     {
-        Table table = new Table().BorderColor(Color.Green);
-        table.RoundedBorder();
-        table.Title("[green]Rangliste[/]");
-        table.AddColumn(new TableColumn("[u]Platz[/]"));
-        table.AddColumn(new TableColumn("[u]Name[/]"));
-        table.AddColumn(new TableColumn("[u]Kontostand[/]"));
+        Table table = CreateRankingTable();
         int rank = 1;
         foreach (Middleman middleman in middlemen)
         {
@@ -80,6 +76,17 @@ public class ConsoleUI
         panel.RoundedBorder();
         panel.Header("[yellow]Ende der Simulation[/]");
         AnsiConsole.Write(panel);
+    }
+
+    private Table CreateRankingTable()
+    {
+        Table table = new Table().BorderColor(Color.Green);
+        table.RoundedBorder();
+        table.Title("[green]Rangliste[/]");
+        table.AddColumn(new TableColumn("[u]Platz[/]"));
+        table.AddColumn(new TableColumn("[u]Name[/]"));
+        table.AddColumn(new TableColumn("[u]Kontostand[/]"));
+        return table;
     }
 
     private void ShowMiddlemanBankroped(Middleman middleman)
@@ -278,17 +285,18 @@ public class ConsoleUI
         try
         {
             var ownedProducts = _marketService.MiddlemanService().GetOwnedProducts(middleman);
-            if (!int.TryParse(userInput, out int selectedProductId) || selectedProductId <= 0)
+            /* if (!int.TryParse(userInput, out int selectedProductId) || selectedProductId <= 0)
             {
                 ShowErrorLog("Ungültige Eingabe!");
                 return;
-            }
-            Product selectedProduct = middleman.Warehouse.ElementAt(selectedProductId - 1).Key;
-            if (selectedProduct == null)
+            } */
+            /* Product selectedProduct = middleman.Warehouse.ElementAt(selectedProductId - 1).Key; */
+            Product selectedProduct = _marketService.MiddlemanService().GetProductByID(Int16.Parse(userInput));
+            /* if (selectedProduct == null)
             {
                 ShowErrorLog("Das ausgewählte Produkt existiert nicht im Lager.");
                 return;
-            }
+            } */
             string quantityInput = AskUserForInput($"Wie viele Einheiten von {selectedProduct.Name} möchten Sie verkaufen?");
             int quantityToSell = int.Parse(quantityInput);
             _marketService.MiddlemanService().SellProduct(middleman, selectedProduct, quantityToSell);
@@ -380,7 +388,6 @@ public class ConsoleUI
 
     private void ShowSellingMenu(Middleman middleman)
     {
-        List<Product> products = _marketService.MiddlemanService().GetOwnedProducts(middleman);
         int index = 1;
         var table = new Table();
         GenerateProductsForSaleTable(ref table);

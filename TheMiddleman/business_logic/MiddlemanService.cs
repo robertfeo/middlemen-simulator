@@ -126,9 +126,9 @@ public class MiddlemanService
         return _middlemanRepository.GetOwnedProducts(middleman);
     }
 
-    public Product FindProductById(int productId)
+    public Product GetProductByID(int id)
     {
-        return _middlemanRepository.FindProductById(productId);
+        return _middlemanRepository.GetProductByID(id);
     }
 
     public void AddBankruptMiddleman(Middleman middleman)

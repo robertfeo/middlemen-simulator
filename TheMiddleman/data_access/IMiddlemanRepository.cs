@@ -10,6 +10,6 @@ namespace TheMiddleman.DataAccess
         void AddMiddleman(Middleman middleman);
         void AddBankruptMiddleman(Middleman middleman);
         List<Product> GetOwnedProducts(Middleman middleman);
-        Product FindProductById(int productId);
+        Product GetProductByID(int id);
     }
 }
