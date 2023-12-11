@@ -13,6 +13,7 @@ namespace TheMiddleman.Entity
         public double DailyEarnings { get; set; }
         public double DailyStorageCosts { get; set; }
         public bool BankruptcyNotified { get; set; } = false;
+        public Loan? CurrentLoan { get; set; }
 
         public Middleman(string name, string company, double accountBalance)
         {
@@ -20,5 +21,13 @@ namespace TheMiddleman.Entity
             Company = company;
             AccountBalance = accountBalance;
         }
+    }
+
+    public class Loan
+    {
+        public double Amount { get; set; }
+        public double InterestRate { get; set; }
+        public double AmountDue { get; set; }
+        public int DueDay { get; set; }
     }
 }

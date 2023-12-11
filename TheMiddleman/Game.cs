@@ -1,6 +1,3 @@
-using System;
-using Spectre.Console;
-
 public class Game
 {
     private readonly ConsoleUI _consoleUI = null!;

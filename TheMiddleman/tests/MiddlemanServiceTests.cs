@@ -14,7 +14,7 @@ public class MiddlemanServiceTests
     {
         _middlemanService = new MiddlemanService();
         _product = new Product { Id = 1, Name = "Product", PurchasePrice = 100, AvailableQuantity = 100 };
-        _middleman = new Middleman("John Doe", "JD Trading", 10000);
+        _middleman = new Middleman("TestMiddleman", "Test Company", 10000);
         ClassicAssert.NotNull(_middlemanService);
         ClassicAssert.NotNull(_product);
         ClassicAssert.NotNull(_middleman);
@@ -105,5 +105,34 @@ public class MiddlemanServiceTests
         });
         ClassicAssert.AreEqual(initialAccountBalance, _middleman!.AccountBalance, "Account balance should remain unchanged.");
         ClassicAssert.AreEqual(1, _product!.AvailableQuantity, "Product quantity should remain unchanged.");
+    }
+
+    [Test]
+    public void TestTakeOutLoan()
+    {
+        var marketService = new MarketService();
+        var middleman = _middleman;
+        _middlemanService!.RegisterNewLoan(3, middleman!, 5000, 0.03);
+        ClassicAssert.IsNotNull(middleman!.CurrentLoan);
+    }
+
+    [Test]
+    public void TestLoanRepayment()
+    {
+        var loanAmount = 5000;
+        var interestRate = 0.03;
+        var currentDay = 1;
+        var dueDay = currentDay + 7;
+        var expectedRepaymentAmount = loanAmount * (1 + interestRate);
+        _middlemanService!.RegisterNewLoan(currentDay, _middleman!, loanAmount, interestRate);
+        for (int day = currentDay; day <= dueDay; day++)
+        {
+            if (_middlemanService.VerifyLoanDue(_middleman!, day))
+            {
+                _middlemanService.HandleLoanRepayment(day, _middleman!);
+            }
+        }
+        ClassicAssert.IsNull(_middleman!.CurrentLoan, "Loan should be repaid and set to null.");
+        ClassicAssert.AreEqual(15000 - expectedRepaymentAmount, _middleman.AccountBalance, "Account balance should decrease by the repayment amount.");
     }
 }

@@ -131,34 +131,58 @@ public class MiddlemanService
         return _middlemanRepository.GetProductByID(id);
     }
 
-    public void AddBankruptMiddleman(Middleman middleman)
-    {
-        _middlemanRepository.RetrieveMiddlemen().Remove(middleman);
-        _middlemanRepository.AddBankruptMiddleman(middleman);
-    }
-
     public bool CheckIfMiddlemanIsLastBankrupted(Middleman middleman)
     {
         var middlemen = _middlemanRepository.RetrieveMiddlemen();
         if (middlemen.Count > 0 && middlemen[middlemen.Count - 1].Equals(middleman))
         {
             return true;
-        }else
+        }
+        else
         {
             return false;
         }
     }
 
-    public bool IsBankrupted(Middleman middleman)
+    public void RegisterNewLoan(int current, Middleman middleman, double amount, double interestRate)
     {
-        if (middleman.AccountBalance <= 0)
+        int dueDay = current + 7;
+        double amountDue = amount * (1 + interestRate);
+        middleman.CurrentLoan = new Loan
         {
-            middleman.BankruptcyNotified = true;
+            Amount = amount,
+            InterestRate = interestRate,
+            AmountDue = amountDue,
+            DueDay = dueDay
+        };
+        middleman.AccountBalance += amount;
+    }
+
+    public void HandleLoanRepayment(int currentDay, Middleman middleman)
+    {
+        if (VerifyLoanDue(middleman, currentDay))
+        {
+            if (middleman.AccountBalance < middleman.CurrentLoan!.AmountDue)
+            {
+                throw new InsufficientFundsException("Loan repayment failed. Not enough funds.");
+            }
+            else
+            {
+                middleman.AccountBalance -= middleman.CurrentLoan.AmountDue;
+                middleman.CurrentLoan = null;
+            }
+        }
+    }
+
+    public bool VerifyLoanDue(Middleman middleman, int currentDay)
+    {
+        if (middleman.CurrentLoan != null && middleman.CurrentLoan.DueDay == currentDay)
+        {
+            return true;
         }
         else
         {
-            middleman.BankruptcyNotified = false;
+            return false;
         }
-        return middleman.BankruptcyNotified;
     }
 }

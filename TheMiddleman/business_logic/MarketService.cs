@@ -52,6 +52,10 @@ public class MarketService
         {
             try
             {
+                if (_middlemanService.VerifyLoanDue(middleman, _currentDay))
+                {
+                    _middlemanService.HandleLoanRepayment(_currentDay, middleman);
+                }
                 _middlemanService.DeductStorageCosts(middleman);
                 if (middleman.AccountBalance <= 0)
                 {
@@ -116,5 +120,15 @@ public class MarketService
     public bool CheckIfMiddlemanIsLastBankrupted(Middleman middleman)
     {
         return _middlemanService.CheckIfMiddlemanIsLastBankrupted(middleman);
+    }
+
+    public int GetCurrentDay()
+    {
+        return _currentDay;
+    }
+
+    public void SetCurrentDay(int day)
+    {
+        _currentDay = day;
     }
 }

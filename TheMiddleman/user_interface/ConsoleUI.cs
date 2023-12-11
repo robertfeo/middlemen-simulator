@@ -215,6 +215,7 @@ public class ConsoleUI
             Console.WriteLine("e) Einkaufen");
             Console.WriteLine("v) Verkaufen");
             Console.WriteLine("t) Lager vergrößern");
+            Console.WriteLine("k) Kredit aufnehmen");
             Console.WriteLine("b) Runde beenden");
             Console.ResetColor();
             ManageUserInteraction(Console.ReadLine()!, middleman, ref endRound);
@@ -238,6 +239,9 @@ public class ConsoleUI
             case "t":
                 ShowWarehouseExpansion(middleman);
                 break;
+            case "k":
+                ShowLoan(middleman);
+                break;
             default:
                 NotifyInvalidMenuChoice();
                 break;
@@ -248,6 +252,38 @@ public class ConsoleUI
     {
         endRound = true;
     }
+
+    private void ShowLoan(Middleman middleman)
+    {
+        if (middleman.CurrentLoan != null)
+        {
+            ShowErrorLog("Es besteht bereits ein Kredit.");
+            return;
+        }
+        else
+        {
+            var loanOptions = new Dictionary<int, (double amount, double interestRate, double repaymentAmount)>
+            {
+                {1, (5000, 0.03, 5150)},
+                {2, (10000, 0.05, 10500)},
+                {3, (25000, 0.08, 27000)}
+            };
+            var prompt = new SelectionPrompt<string>()
+                .Title("Wählen Sie einen Kredit aus:")
+                .PageSize(10)
+                .AddChoices(new[] {
+                "1) $5000 mit 3% Zinsen (=$5150 Rückzahlung)",
+                "2) $10000 mit 5% Zinsen (=$10500 Rückzahlung)",
+                "3) $25000 mit 8% Zinsen (=$27000 Rückzahlung)"
+                });
+            string choice = AnsiConsole.Prompt(prompt);
+            int selectedOption = int.Parse(choice.Substring(0, 1));
+            (double amount, double interestRate, double repaymentAmount) = loanOptions[selectedOption];
+            _marketService!.MiddlemanService().RegisterNewLoan(_marketService.GetCurrentDay(), middleman, amount, interestRate);
+            ShowMessage($"Kredit über ${amount} mit {interestRate * 100}% Zinsen erfolgreich aufgenommen. Rückzahlung: ${repaymentAmount}.");
+        }
+    }
+
 
     private void ShowShopping(Middleman middleman)
     {
@@ -285,18 +321,7 @@ public class ConsoleUI
         try
         {
             var ownedProducts = _marketService.MiddlemanService().GetOwnedProducts(middleman);
-            /* if (!int.TryParse(userInput, out int selectedProductId) || selectedProductId <= 0)
-            {
-                ShowErrorLog("Ungültige Eingabe!");
-                return;
-            } */
-            /* Product selectedProduct = middleman.Warehouse.ElementAt(selectedProductId - 1).Key; */
             Product selectedProduct = _marketService.MiddlemanService().GetProductByID(Int16.Parse(userInput));
-            /* if (selectedProduct == null)
-            {
-                ShowErrorLog("Das ausgewählte Produkt existiert nicht im Lager.");
-                return;
-            } */
             string quantityInput = AskUserForInput($"Wie viele Einheiten von {selectedProduct.Name} möchten Sie verkaufen?");
             int quantityToSell = int.Parse(quantityInput);
             _marketService.MiddlemanService().SellProduct(middleman, selectedProduct, quantityToSell);
@@ -427,28 +452,6 @@ public class ConsoleUI
     private void ShowMessage(string message)
     {
         AnsiConsole.WriteLine(message);
-    }
-
-    private void PrintMessageInFrame(ConsoleColor color, string message)
-    {
-        int messageLength = message.Length + 2; // Add padding for the message
-        char horizontalLine = '\u2550';     // '═' Double horizontal
-        char verticalLine = '\u2551';       // '║' Double vertical
-        char topLeftCorner = '\u2554';      // '╔' Double down and right
-        char topRightCorner = '\u2557';     // '╗' Double down and left
-        char bottomLeftCorner = '\u255A';   // '╚' Double up and right
-        char bottomRightCorner = '\u255D';  // '╝' Double up and left
-        Console.ForegroundColor = color;
-        Console.Write(topLeftCorner);
-        Console.Write(new string(horizontalLine, messageLength));
-        Console.WriteLine(topRightCorner);
-        Console.Write(verticalLine);
-        Console.Write($" {message} ");
-        Console.WriteLine(verticalLine);
-        Console.Write(bottomLeftCorner);
-        Console.Write(new string(horizontalLine, messageLength));
-        Console.WriteLine(bottomRightCorner);
-        Console.ResetColor();
     }
 
     private void ShowCurrentDay(int currentDay)
