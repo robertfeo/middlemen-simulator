@@ -200,6 +200,16 @@ public class ConsoleUI
         table.AddRow("Einnahmen aus Verkäufen", $"{CurrencyFormatter.FormatPrice(middleman.DailyEarnings)}");
         table.AddRow("Lagerkosten", $"{CurrencyFormatter.FormatPrice(middleman.DailyStorageCosts)}");
         table.AddRow("Aktueller Kontostand zu Beginn des Tages", $"{CurrencyFormatter.FormatPrice(middleman.AccountBalance)}");
+        if (middleman.CurrentLoan != null)
+        {
+            table.AddRow("Kredit", $"{CurrencyFormatter.FormatPrice(middleman.CurrentLoan.Amount)}");
+            table.AddRow("Kreditfälligkeit", $"{middleman.CurrentLoan.DueDay - _marketService.GetCurrentDay()} Tage");
+        }
+        if (middleman.CurrentLoan == null && middleman.LoanRepaymentNotified)
+        {
+            table.AddRow("[green]💸 Kredit wurde zurückgezahlt.[/]");
+            middleman.LoanRepaymentNotified = false;
+        }
     }
 
     private void ShowMenuAndTakeAction(Middleman middleman, int currentDay)
@@ -255,35 +265,33 @@ public class ConsoleUI
 
     private void ShowLoan(Middleman middleman)
     {
-        if (middleman.CurrentLoan != null)
-        {
-            ShowErrorLog("Es besteht bereits ein Kredit.");
-            return;
-        }
-        else
-        {
-            var loanOptions = new Dictionary<int, (double amount, double interestRate, double repaymentAmount)>
+        var loanOptions = new Dictionary<int, (double amount, double interestRate, double repaymentAmount)>
             {
                 {1, (5000, 0.03, 5150)},
                 {2, (10000, 0.05, 10500)},
                 {3, (25000, 0.08, 27000)}
             };
-            var prompt = new SelectionPrompt<string>()
-                .Title("Wählen Sie einen Kredit aus:")
-                .PageSize(10)
-                .AddChoices(new[] {
+        var prompt = new SelectionPrompt<string>()
+            .Title("Wählen Sie einen Kredit aus:")
+            .PageSize(10)
+            .AddChoices(new[] {
                 "1) $5000 mit 3% Zinsen (=$5150 Rückzahlung)",
                 "2) $10000 mit 5% Zinsen (=$10500 Rückzahlung)",
                 "3) $25000 mit 8% Zinsen (=$27000 Rückzahlung)"
-                });
-            string choice = AnsiConsole.Prompt(prompt);
-            int selectedOption = int.Parse(choice.Substring(0, 1));
-            (double amount, double interestRate, double repaymentAmount) = loanOptions[selectedOption];
-            _marketService!.MiddlemanService().RegisterNewLoan(_marketService.GetCurrentDay(), middleman, amount, interestRate);
+            });
+        string choice = AnsiConsole.Prompt(prompt);
+        int selectedOption = int.Parse(choice.Substring(0, 1));
+        (double amount, double interestRate, double repaymentAmount) = loanOptions[selectedOption];
+        try
+        {
+            _marketService.MiddlemanService().RegisterNewLoan(_marketService.GetCurrentDay(), middleman, amount, interestRate);
             ShowMessage($"Kredit über ${amount} mit {interestRate * 100}% Zinsen erfolgreich aufgenommen. Rückzahlung: ${repaymentAmount}.");
         }
+        catch (LoanAlreadyExistsException ex)
+        {
+            ShowErrorLog(ex.Message);
+        }
     }
-
 
     private void ShowShopping(Middleman middleman)
     {
@@ -329,7 +337,8 @@ public class ConsoleUI
         }
         catch (FormatException) { ShowErrorLog("Ungültige Eingabe."); }
         catch (ProductNotAvailableException ex) { ShowErrorLog(ex.Message); }
-        catch (Exception ex) { ShowErrorLog(ex.Message); }
+        catch (InvalidOperationException) { ShowErrorLog("Ungültige Eingabe."); }
+        catch (ArgumentOutOfRangeException) { ShowErrorLog("Produkt ID nicht gefunden"); }
     }
 
     private void ShowSelling(Middleman middleman)
@@ -462,7 +471,7 @@ public class ConsoleUI
         Console.WriteLine("\n");
     }
 
-    private String GetUserInput()
+    private string GetUserInput()
     {
         return Console.ReadLine() ?? "";
     }

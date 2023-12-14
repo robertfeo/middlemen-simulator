@@ -14,6 +14,7 @@ namespace TheMiddleman.Entity
         public double DailyStorageCosts { get; set; }
         public bool BankruptcyNotified { get; set; } = false;
         public Loan? CurrentLoan { get; set; }
+        public bool LoanRepaymentNotified { get; set; } = false;
 
         public Middleman(string name, string company, double accountBalance)
         {

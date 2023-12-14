@@ -148,6 +148,10 @@ public class MiddlemanService
     {
         int dueDay = current + 7;
         double amountDue = amount * (1 + interestRate);
+        if (middleman.CurrentLoan != null)
+        {
+            throw new LoanAlreadyExistsException("Es existiert bereits ein Kredit.");
+        }
         middleman.CurrentLoan = new Loan
         {
             Amount = amount,
@@ -170,6 +174,7 @@ public class MiddlemanService
             {
                 middleman.AccountBalance -= middleman.CurrentLoan.AmountDue;
                 middleman.CurrentLoan = null;
+                middleman.LoanRepaymentNotified = true;
             }
         }
     }
