@@ -265,26 +265,36 @@ public class ConsoleUI
     private void ShowLoan(Middleman middleman)
     {
         var loanOptions = new Dictionary<int, (double amount, double interestRate, double repaymentAmount)>
-            {
-                {1, (5000, 0.03, 5150)},
-                {2, (10000, 0.05, 10500)},
-                {3, (25000, 0.08, 27000)}
-            };
+    {
+        {1, (5000, 0.03, 5150)},
+        {2, (10000, 0.05, 10500)},
+        {3, (25000, 0.08, 27000)}
+    };
         var prompt = new SelectionPrompt<string>()
             .Title("Wählen Sie einen Kredit aus:")
             .PageSize(10)
-            .AddChoices(new[] {
-                "5000 € mit 3% Zinsen (= 5150 € Rückzahlung)",
-                "10000 € mit 5% Zinsen (= 10500 € Rückzahlung)",
-                "25000 € mit 8% Zinsen (= 27000 € Rückzahlung)"
-            });
+            .AddChoices(loanOptions.Select(opt => $"{opt.Key}) {opt.Value.amount} € mit {opt.Value.interestRate * 100}% Zinsen (= {opt.Value.repaymentAmount} € Rückzahlung)"));
         string choice = AnsiConsole.Prompt(prompt);
         int selectedOption = int.Parse(choice.Substring(0, 1));
+        if (loanOptions.ContainsKey(selectedOption))
+        {
+            ProcessLoanSelection(middleman, selectedOption, loanOptions);
+        }
+        else
+        {
+            ShowErrorLog("Ungültige Auswahl. Bitte wählen Sie eine gültige Kreditoption.");
+        }
+    }
+
+    private void ProcessLoanSelection(Middleman middleman, int selectedOption, Dictionary<int, (double amount, double interestRate, double repaymentAmount)> loanOptions)
+    {
         (double amount, double interestRate, double repaymentAmount) = loanOptions[selectedOption];
         try
         {
             _marketService.MiddlemanService().RegisterNewLoan(_marketService.GetCurrentDay(), middleman, amount, interestRate);
-            ShowMessage($"Kredit über ${amount} mit {interestRate * 100}% Zinsen erfolgreich aufgenommen. Rückzahlung: ${repaymentAmount}.");
+            Panel panel = new Panel(new Markup($"Kredit über {amount}€ mit {interestRate * 100}% Zinsen erfolgreich aufgenommen. Rückzahlung: {repaymentAmount}€."))
+            .Header("[indianred1]:bell: Information[/]");
+            AnsiConsole.Write(panel);
         }
         catch (LoanAlreadyExistsException ex)
         {
