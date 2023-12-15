@@ -1,6 +1,5 @@
 using TheMiddleman.Entity;
 using Spectre.Console;
-using System.Numerics;
 
 public class ConsoleUI
 {
@@ -137,7 +136,7 @@ public class ConsoleUI
             new SelectionPrompt<string>()
                 .Title("Schwierigkeitsgrad auswählen:")
                 .PageSize(10)
-                .AddChoices(new[] { "Einfach", "Normal", "Schwer" })
+                .AddChoices(["Einfach", "Normal", "Schwer"])
         );
         return balanceOptions[difficulty];
     }
@@ -315,7 +314,9 @@ public class ConsoleUI
             Product selectedProduct = _marketService.ProductService().FindProductById(int.Parse(userInput))!;
             int quantity = int.Parse(AskUserForInput("Wie viel von " + selectedProduct.Name + " möchten Sie kaufen?"));
             _marketService.MiddlemanService().PurchaseProduct(middleman, selectedProduct, quantity);
-            ShowMessage($"Sie haben {quantity}x {selectedProduct.Name} gekauft.");
+            Panel panel = new Panel(new Markup($"Sie haben {quantity}x {selectedProduct.Name} gekauft."))
+            .Header("[indianred1]:bell: Information[/]");
+            AnsiConsole.Write(panel);
         }
         catch (WarehouseCapacityExceededException ex) { ShowErrorLog(ex.Message); }
         catch (InsufficientFundsException ex) { ShowErrorLog(ex.Message); }
@@ -333,7 +334,9 @@ public class ConsoleUI
             string quantityInput = AskUserForInput($"Wie viele Einheiten von {selectedProduct.Name} möchten Sie verkaufen?");
             int quantityToSell = int.Parse(quantityInput);
             _marketService.MiddlemanService().SellProduct(middleman, selectedProduct, quantityToSell);
-            ShowMessage($"Erfolgreich {quantityToSell}x {selectedProduct.Name} verkauft.");
+            Panel panel = new Panel(new Markup($"Erfolgreich {quantityToSell}x {selectedProduct.Name} verkauft."))
+            .Header("[indianred1]:bell: Information[/]");
+            AnsiConsole.Write(panel);
         }
         catch (FormatException) { ShowErrorLog("Ungültige Eingabe."); }
         catch (ProductNotAvailableException ex) { ShowErrorLog(ex.Message); }
@@ -360,6 +363,54 @@ public class ConsoleUI
                 ShowErrorLog(ex.Message);
             }
         }
+    }
+
+    private void ShowProductBreakdownChart(Middleman middleman)
+    {
+        AnsiConsole.Write("Verteilung der Produkte im Lager:\n");
+        double totalCapacity = middleman.MaxStorageCapacity;
+        double usedCapacity = middleman.Warehouse.Sum(item => item.Value);
+        double emptyCapacity = totalCapacity - usedCapacity;
+        double emptyCapacityPercentage = (emptyCapacity / totalCapacity) * 100;
+        var chart = new BreakdownChart()
+            .Width(60)
+            .FullSize()
+            .ShowPercentage();
+        foreach (var entry in middleman.Warehouse)
+        {
+            Product product = entry.Key;
+            int quantity = entry.Value;
+            double percentage = (quantity / totalCapacity) * 100;
+            Color itemColor = GetColorForProduct(product);
+            chart.AddItem(product.Name, percentage, itemColor);
+        }
+        if (emptyCapacityPercentage > 0)
+        {
+            chart.AddItem("Leer", emptyCapacityPercentage, Color.Grey);
+        }
+        AnsiConsole.Write(chart);
+    }
+
+    private static Color GetColorForProduct(Product product)
+    {
+        Dictionary<string, Color> colorMappings = new Dictionary<string, Color>()
+    {
+        { "Gurke", Color.Green },
+        { "Aprikose", Color.Orange1 },
+        { "Tomate", Color.Red3 },
+        { "Kartoffel", Color.RosyBrown },
+        { "Zwiebel", Color.Olive },
+        { "Karotte", Color.DarkOrange },
+        { "Apfel", Color.Green3 },
+        { "Banane", Color.Yellow },
+        { "Orangensaft", Color.Orange3 },
+        { "Milch", Color.NavajoWhite1 }
+    };
+        if (colorMappings.ContainsKey(product.Name))
+        {
+            return colorMappings[product.Name];
+        }
+        return Color.Grey;
     }
 
     private void ShowWarehouseExpansion(Middleman middleman)
@@ -442,7 +493,8 @@ public class ConsoleUI
         table.Title("[green]Produkte zum Verkauf:[/]");
         table.Collapse();
         AnsiConsole.Write(table);
-        ShowMessage("z) Zurück");
+        ShowProductBreakdownChart(middleman);
+        ShowMessage("\nz) Zurück");
     }
 
     private void GenerateProductsForSaleTable(ref Table table)
