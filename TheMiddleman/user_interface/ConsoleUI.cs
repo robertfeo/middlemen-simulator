@@ -274,9 +274,9 @@ public class ConsoleUI
             .Title("Wählen Sie einen Kredit aus:")
             .PageSize(10)
             .AddChoices(new[] {
-                "1) $5000 mit 3% Zinsen (=$5150 Rückzahlung)",
-                "2) $10000 mit 5% Zinsen (=$10500 Rückzahlung)",
-                "3) $25000 mit 8% Zinsen (=$27000 Rückzahlung)"
+                "5000 € mit 3% Zinsen (= 5150 € Rückzahlung)",
+                "10000 € mit 5% Zinsen (= 10500 € Rückzahlung)",
+                "25000 € mit 8% Zinsen (= 27000 € Rückzahlung)"
             });
         string choice = AnsiConsole.Prompt(prompt);
         int selectedOption = int.Parse(choice.Substring(0, 1));
