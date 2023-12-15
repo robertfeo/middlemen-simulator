@@ -52,10 +52,7 @@ public class MarketService
         {
             try
             {
-                if (_middlemanService.VerifyLoanDue(middleman, _currentDay))
-                {
-                    _middlemanService.HandleLoanRepayment(_currentDay, middleman);
-                }
+                CheckLoanStatus(middleman, _currentDay);
                 _middlemanService.DeductStorageCosts(middleman);
                 if (middleman.AccountBalance <= 0)
                 {
@@ -74,6 +71,14 @@ public class MarketService
         SaveBankruptMiddlemen();
         ChangeMiddlemanOrder();
         CheckForEndOfSimulation();
+    }
+
+    private void CheckLoanStatus(Middleman middleman, int currentDay)
+    {
+        if (_middlemanService.VerifyLoanDue(middleman, currentDay))
+        {
+            _middlemanService.RepayLoan(currentDay, middleman);
+        }
     }
 
     private void SaveBankruptMiddlemen()
@@ -117,18 +122,8 @@ public class MarketService
         _simulationDuration = duration;
     }
 
-    public bool CheckIfMiddlemanIsLastBankrupted(Middleman middleman)
-    {
-        return _middlemanService.CheckIfMiddlemanIsLastBankrupted(middleman);
-    }
-
     public int GetCurrentDay()
     {
         return _currentDay;
-    }
-
-    public void SetCurrentDay(int day)
-    {
-        _currentDay = day;
     }
 }

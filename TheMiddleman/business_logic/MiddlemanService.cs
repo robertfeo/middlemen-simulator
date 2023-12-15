@@ -131,19 +131,6 @@ public class MiddlemanService
         return _middlemanRepository.GetProductByID(id);
     }
 
-    public bool CheckIfMiddlemanIsLastBankrupted(Middleman middleman)
-    {
-        var middlemen = _middlemanRepository.RetrieveMiddlemen();
-        if (middlemen.Count > 0 && middlemen[middlemen.Count - 1].Equals(middleman))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
     public void RegisterNewLoan(int current, Middleman middleman, double amount, double interestRate)
     {
         int dueDay = current + 7;
@@ -162,7 +149,7 @@ public class MiddlemanService
         middleman.AccountBalance += amount;
     }
 
-    public void HandleLoanRepayment(int currentDay, Middleman middleman)
+    public void RepayLoan(int currentDay, Middleman middleman)
     {
         if (VerifyLoanDue(middleman, currentDay))
         {

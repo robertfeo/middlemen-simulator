@@ -196,7 +196,7 @@ public class MiddlemanServiceTests
         {
             if (_middlemanService.VerifyLoanDue(_middleman!, day))
             {
-                _middlemanService.HandleLoanRepayment(day, _middleman!);
+                _middlemanService.RepayLoan(day, _middleman!);
             }
         }
         ClassicAssert.IsNull(_middleman!.CurrentLoan, "Loan should be repaid and set to null.");
@@ -217,7 +217,7 @@ public class MiddlemanServiceTests
         _middleman!.AccountBalance = 100;
         Assert.Throws<InsufficientFundsException>(() =>
         {
-            _middlemanService.HandleLoanRepayment(8, _middleman!);
+            _middlemanService.RepayLoan(8, _middleman!);
         });
     }
 
